@@ -1,10 +1,10 @@
 [build]
   publish = "public"
-  command = "yarn build"
+  command = "npm run build"
 
 [build.environment]
-  NODE_VERSION = "16"
-  YARN_VERSION = "1.22.19"
+  NODE_VERSION = "20"
+  NPM_FLAGS = "--legacy-peer-deps"
 
 [[headers]]
   for = "/*"
