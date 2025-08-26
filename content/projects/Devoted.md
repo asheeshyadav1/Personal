@@ -1,14 +1,14 @@
 ---
-date: '2018-12-01'
-title: 'Devoted Health'
+date: '2024-06-01'
+title: 'Auggie The Therapist'
 github: ''
 external: 'https://www.devoted.com/'
 tech:
-  - Gatsby
-  - TypeScript
-  - Algolia
-company: 'Upstatement'
-showInProjects: false
+  - Google Gemini
+  - Node.js
+  - Express.js
+  - React.js
+showInProjects: true
 ---
 
-A site for a revolutionary healthcare company, including an Algolia instant search integration
+Say Hi to Auggie! A virtual trained therapist chatbot 👋

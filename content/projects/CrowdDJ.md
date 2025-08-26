@@ -1,14 +1,15 @@
 ---
-date: '2017-03-01'
-title: 'Crowd DJ'
-github: 'https://github.com/crowddj/crowddj-react'
+date: '2025-01-01'
+title: 'Adaptive Quadrature and Convergence Analysis'
+github: ''
 external: ''
 tech:
-  - React
-  - Firebase
-  - Spotify API
-company: HackBeanpot 2017
-showInProjects: false
+  - Numerical integration (Composite Simpson’s Rule)
+  - Mathematical Modeling 
+  - Error Analysis
+showInProjects: true
 ---
 
-Web app that allows people to crowdsource a party's music queue. Allows people to request songs, upvote songs, rate songs, etc. so the DJ can see how the crowd is feeling and queue songs accordingly. Won Best UI/UX Design at Hackbeanpot 2017.
+Developed a Composite Simpson’s Rule numerical integrator in MATLAB for a piecewise function with variable regularity. Performed a rigorous convergence analysis for different parameters, empirically determining the order of accuracy (p) and explaining how the smoothness of the integrand directly governs the convergence rate of the numerical method.
+
+

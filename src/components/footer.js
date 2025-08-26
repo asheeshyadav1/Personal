@@ -105,10 +105,10 @@ const Footer = () => {
       </StyledSocialLinks>
 
       <StyledCredit tabindex="-1">
-        <a href="https://github.com/bchiang7/v4">
-          <div>Designed &amp; Built by Brittany Chiang</div>
+        <a href="https://brittanychiang.com">
+          <div>Site was adapted from Brittany Chiang</div>
 
-          {githubInfo.stars && githubInfo.forks && (
+          {/* {githubInfo.stars && githubInfo.forks && (
             <div className="github-stats">
               <span>
                 <Icon name="Star" />
@@ -119,7 +119,17 @@ const Footer = () => {
                 <span>{githubInfo.forks.toLocaleString()}</span>
               </span>
             </div>
-          )}
+          )} */}
+        </a>
+      </StyledCredit>
+      <StyledCredit tabindex="-1">
+        <a href="https://tonyteaches.tech">
+          <div>Linux Groupchat Photo was adapted from Tony Teaches</div>
+        </a>
+      </StyledCredit>
+      <StyledCredit tabindex="-1">
+        <a href="https://www.forbes.com/councils/forbesbusinessdevelopmentcouncil/2025/02/18/how-far-is-blockchain-in-becoming-a-part-of-day-to-day-banking-and-payments/">
+          <div>Blockchain Photo was adapted from Forbes</div>
         </a>
       </StyledCredit>
     </StyledFooter>

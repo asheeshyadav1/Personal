@@ -1,15 +1,15 @@
 ---
 date: '1'
-title: 'Halcyon Theme'
-cover: './halcyon.png'
-github: 'https://github.com/bchiang7/halcyon-site'
-external: 'https://halcyon-theme.netlify.com/'
+title: 'Sync'
+cover: './wpSync.jpeg'
+github: 'https://github.com/asheeshyadav1/sync'
+external: 'https://sync-zkc3.onrender.com/'
 tech:
-  - VS Code
-  - Sublime Text
-  - Atom
-  - iTerm2
-  - Hyper
+  - Spring Boot
+  - Java
+  - Leaflet
+  - WebSocket
+  - Imgur
 ---
 
-A minimal, dark blue theme for VS Code, Sublime Text, Atom, iTerm, and more. Available on [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=brittanychiang.halcyon-vscode), [Package Control](https://packagecontrol.io/packages/Halcyon%20Theme), [Atom Package Manager](https://atom.io/themes/halcyon-syntax), and [npm](https://www.npmjs.com/package/hyper-halcyon-theme).
+Designed and developed a full-stack web application enabling real-time 1-on-1 messaging via WebSockets and location sharing, integrating third-party APIs such as Imgur for media uploads and Leaflet.js for interactive maps; implemented comprehensive unit and integration tests using Mockito and JUnit, achieving 90%+ code coverage and ensuring high system reliability.

@@ -1,14 +1,13 @@
 ---
 date: '2018-05-01'
-title: 'blistabloc'
+title: 'Iterative Solvers for Sparse Linear Systems'
 github: ''
-external: 'https://blistabloc.com/'
 tech:
-  - WordPress
-  - Timber
-  - WooCommerce
-company: 'Scout'
-showInProjects: false
+  - MATLAB
+  - Numerical Linear Algebra
+  - analysis of algorithm convergence
+
+showInProjects: true
 ---
 
-Custom WordPress theme and e-commerce site built with Timber and WooCommerce for blistabloc, a start-up selling the only reactive shoe insert that prevents blisters from forming.
+Designed and implemented the Jacobi iterative method from scratch in MATLAB to solve large, parameterized tridiagonal systems. Systematically analyzed the relationship between matrix size (n) and iteration count, determining the algorithmic scaling (O(n²)) for different problem conditions and linking it to spectral radius theory.

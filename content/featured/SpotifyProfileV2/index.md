@@ -1,16 +1,16 @@
 ---
 date: '3'
-title: 'Build a Spotify Connected App'
-cover: './course-card.png'
-external: 'https://www.newline.co/courses/build-a-spotify-connected-app'
-cta: 'https://www.newline.co/courses/build-a-spotify-connected-app'
+title: 'Simple Blockchain Implementation'
+cover: './bc.webp'
+external: 'https://github.com/SFU-CMPT-201/a12-asheeshyadav1'
+cta: 'https://github.com/SFU-CMPT-201/a12-asheeshyadav1'
+
 tech:
-  - React
-  - Express
-  - Spotify API
-  - Styled Components
+  - C Programming
+  - OpenSSL libcrypto (SHA-256)
+  - Proof-of-Work Mining
+  - Blockchain Data Structures
+  - CMake Build System
 ---
 
-Having struggled with understanding how the Spotify OAuth flow works, I made the course I wish I could have had.
-
-Unlike tutorials that only cover a few concepts and leave you with half-baked GitHub repositories, this course covers everything from explaining the principles of REST APIs to implementing Spotify's OAuth flow and fetching API data in a React app. By the end of the course, you’ll have an app deployed to the internet you can add to your portfolio.
+Developed a simple blockchain system in C that securely manages a sequence of blocks, ensuring tamper detection and data integrity using SHA-256 cryptographic hashing. Implemented custom functions to initialize a blockchain, add mined blocks, and verify block validity. Designed a mining mechanism that calculates a correct nonce by iterating through values until the block hash satisfies a given difficulty target. Leveraged timestamps, index tracking, and previous hash linking to maintain an immutable and verifiable chain. Integrated OpenSSL’s libcrypto library to generate SHA-256 hashes efficiently and ensured compatibility with provided shared libraries. Extensively tested the system for nonce calculation, hash validation, and blockchain verification under varying difficulty levels.

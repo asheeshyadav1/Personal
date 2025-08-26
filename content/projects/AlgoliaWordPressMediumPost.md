@@ -1,14 +1,13 @@
 ---
-date: '2020-03-27'
-title: 'Integrating Algolia Search with WordPress Multisite'
-github: ''
-external: 'https://medium.com/stories-from-upstatement/integrating-algolia-search-with-wordpress-multisite-e2dea3ed449c'
+date: '2025-05-01'
+title: 'Concurrent MapReduce Framework'
+github: 'https://github.com/SFU-CMPT-201/a10-asheeshyadav1'
 tech:
-  - Algolia
-  - WordPress
-  - PHP
-company: 'Upstatement'
+  - C Programming
+  - POSIX Threads (pthreads)
+  - Synchronization Primitives
+
 showInProjects: true
 ---
 
-Building a custom multisite compatible WordPress plugin to build global search with Algolia
+Implemented a multi-threaded MapReduce framework in C using pthreads and synchronization primitives to efficiently process key-value datasets in parallel

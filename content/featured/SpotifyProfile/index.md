@@ -1,15 +1,15 @@
 ---
 date: '2'
-title: 'Spotify Profile'
-cover: './demo.png'
-github: 'https://github.com/bchiang7/spotify-profile'
-external: 'https://spotify-profile.herokuapp.com/'
+title: 'Multithreaded Group Chat Server'
+cover: './termChat.jpg'
+github: 'https://github.com/SFU-CMPT-201/a11-asheeshyadav1'
+
 tech:
-  - React
-  - Styled Components
-  - Express
-  - Spotify API
-  - Heroku
+  - Sockets (AF_INET, TCP/IP)
+  - Multithreading & Synchronization
+  - Custom Binary Messaging Protocol
+  - Two-Phase Commit Protocol
+  - Fuzzing & Random Data Generation
 ---
 
-A web app for visualizing personalized Spotify data. View your top artists, top tracks, recently played tracks, and detailed audio information about each track. Create and save new playlists of recommended tracks based on your existing playlists and more.
+Developed a multithreaded group chat server and custom fuzzing clients in C, implementing a two-phase commit protocol for graceful termination. Built a socket-based messaging system supporting real-time message broadcasting, strict global ordering guarantees, and concurrent client connections using AF_INET. Designed a custom binary message protocol with sender metadata, integrated random message generation using getentropy(), and ensured robust testing with CMake, server/client testers, and concurrency-safe synchronization.

@@ -1,14 +1,13 @@
 ---
-date: '2017-11-01'
-title: 'Apple Music Facebook Messenger Integration'
+date: '2025-01-01'
+title: 'Performance Analysis of Linear Algebra Algorithms'
 github: ''
-external: 'https://www.theverge.com/2017/10/5/16433770/facebook-messenger-apple-music-bot-song-streaming'
 tech:
-  - Ember
-  - JS
-  - SCSS
-company: 'Apple'
+  - Computational Complexity
+  - Algorithm Analysis
+  - Comparative Data Analysis
+  - MATLAB
 showInProjects: true
 ---
 
-Facebook Messenger chat bot extension featuring authentication and full song streaming from within the Messenger app. Read more about it on [The Verge](https://www.theverge.com/2017/10/5/16433770/facebook-messenger-apple-music-bot-song-streaming).
+Conducted a comparative performance analysis of matrix inversion versus Cholesky factorization for solving large, sparse, symmetric positive-definite systems. Implemented algorithms in MATLAB to empirically determine computational complexity, validating theoretical expectations (O(n³) for inversion vs. ~O(n²) for Cholesky) through systematic benchmarking and data visualization.

@@ -1,14 +1,13 @@
 ---
-date: '2017-12-01'
-title: 'Apple Music Embeddable Web Player Widget'
+date: '2025-01-01'
+title: 'Numerical Limits and Finite Precision Analysis'
 github: ''
-external: 'https://tools.applemusic.com/en-us'
 tech:
-  - MusicKit.js
-  - JS
-  - SCSS
-company: 'Apple'
+  - Numerical Analysis
+  - Error Analysis
+  - Data Visualization
+
 showInProjects: true
 ---
 
-Embeddable web player widget for Apple Music that lets users log in and listen to full song playback in the browser leveraging [MusicKit.js](https://developer.apple.com/documentation/musickitjs). Read more about this project on [9to5Mac](https://9to5mac.com/2018/06/03/apple-music-embeddable-web-player-listen-browser/).
+Investigated the behavior of a numerically unstable function as a parameter approaches zero. Developed a MATLAB algorithm to compute and visualize the function, successfully identifying its analytical limit and the onset of catastrophic cancellation due to finite-precision arithmetic.
