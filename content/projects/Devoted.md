@@ -1,8 +1,8 @@
 ---
 date: '2024-06-01'
 title: 'Auggie The Therapist'
-github: ''
-external: 'https://www.devoted.com/'
+github: 'https://github.com/asheeshyadav1/Auggie-the-Therapist'
+external: 'https://gem-gamma-beryl.vercel.app/'
 tech:
   - Google Gemini
   - Node.js

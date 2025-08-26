@@ -1,7 +1,7 @@
 ---
 date: '2025-01-01'
 title: 'Numerical Limits and Finite Precision Analysis'
-github: ''
+github: 'https://github.com/asheeshyadav1/Numerical-Limits-and-Finite-Precision-Analysis'
 tech:
   - Numerical Analysis
   - Error Analysis

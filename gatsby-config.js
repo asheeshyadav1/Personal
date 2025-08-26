@@ -4,10 +4,10 @@ module.exports = {
   siteMetadata: {
     title: 'Asheesh Yadav',
     description:
-      'Brittany Chiang is a software engineer who specializes in building (and occasionally designing) exceptional digital experiences.',
-    siteUrl: 'https://brittanychiang.com', // No trailing slash allowed!
+      'Asheesh Yadav is a software engineer who specializes in building exceptional digital experiences.',
+    siteUrl: 'https://asheeshyadav.netlify.app', // No trailing slash allowed! - Update this when you get your domain
     image: '/og.png', // Path to your image you placed in the 'static' folder
-    twitterUsername: '@bchiang7',
+    twitterUsername: '@asheeshyadav1',
   },
   plugins: [
     `gatsby-plugin-react-helmet`,
@@ -26,7 +26,7 @@ module.exports = {
         background_color: config.colors.darkNavy,
         theme_color: config.colors.navy,
         display: 'minimal-ui',
-        icon: 'src/images/logo.png',
+        icon: 'src/images/AY.png',
       },
     },
     `gatsby-plugin-offline`,
