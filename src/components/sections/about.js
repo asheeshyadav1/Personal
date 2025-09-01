@@ -125,8 +125,14 @@ const About = () => {
     sr.reveal(revealContainer.current, srConfig());
   }, []);
 
-  const skills = ['C/C++', 'Java/Spring Boot', 'Python', 'JavaScript', 'SQL / Database Design', 'Cloud Platforms (AWS / Azure / GCP)'];
-
+  const skills = [
+    'C/C++',
+    'Java/Spring Boot',
+    'Python',
+    'JavaScript',
+    'SQL / Database Design',
+    'Cloud Platforms (AWS / Azure / GCP)',
+  ];
 
   return (
     <StyledAboutSection id="about" ref={revealContainer}>
@@ -136,23 +142,24 @@ const About = () => {
         <StyledText>
           <div>
             <p>
-              Hi! I’m Asheesh, and I love building systems that turn data into actionable insights 
-              and reliable applications. I’ve designed full-stack apps with real-time messaging, 
-              implemented automation pipelines that process hundreds of thousands of records, 
-              and even created a simple blockchain to explore tamper-resistant data structures.
+              Hi! I’m Asheesh, and I love building systems that turn data into actionable insights
+              and reliable applications. I’ve designed full-stack apps with real-time messaging,
+              implemented automation pipelines that process hundreds of thousands of records, and
+              even created a simple blockchain to explore tamper-resistant data structures.
             </p>
 
             <p>
-              In my research and internship work, I’ve optimized ETL workflows, automated large-scale 
-              data ingestion from YouTube channels, and built predictive models for forecasting resource usage. 
-              I’m fascinated by statistical learning and AI, applying machine learning techniques to 
-              extract insights, optimize performance, and improve decision-making.
+              In my research and internship work, I’ve optimized ETL workflows, automated
+              large-scale data ingestion from YouTube channels, and built predictive models for
+              forecasting resource usage. I’m fascinated by statistical learning and AI, applying
+              machine learning techniques to extract insights, optimize performance, and improve
+              decision-making.
             </p>
 
             <p>
-              These experiences have shaped my focus on building efficient, scalable, 
-              and intelligent systems(combining cloud computing, distributed systems, 
-              and data-driven algorithms) to create impactful, real-world solutions.
+              These experiences have shaped my focus on building efficient, scalable, and
+              intelligent systems(combining cloud computing, distributed systems, and data-driven
+              algorithms) to create impactful, real-world solutions.
             </p>
 
             <p>Here are a few technologies I’ve been working with recently:</p>
@@ -167,7 +174,7 @@ const About = () => {
           <div className="wrapper">
             <StaticImage
               className="img"
-              src="../../images/me.jpg"
+              src="../../images/meAY.jpeg"
               width={500}
               quality={95}
               formats={['AUTO', 'WEBP', 'AVIF']}
