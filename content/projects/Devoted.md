@@ -11,4 +11,4 @@ tech:
 showInProjects: true
 ---
 
-Say Hi to Auggie! A virtual trained therapist chatbot 👋
+Say Hi to Auggie! A virtual Google Gemini AI trained therapist chatbot 👋
