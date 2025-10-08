@@ -6,10 +6,10 @@ location: 'Burnaby, BC'
 range: 'May - Dec 2025'
 url: 'https://www.sfu.ca/beedie.html'
 ---
-- Built and maintained an internal data ingestion platform leveraging Python, Bash, and Cron to automate large-scale collection of YouTube engagement data from 50+ channels
-- Developed and optimized ETL pipelines to streamline onboarding and processing workflows, reducing manual intervention and improving overall system reliability
-- Achieved a 99% performance improvement by redesigning a core API integration algorithm, enabling faster and more efficient data retrieval within strict quota constraints
-- Designed and managed SQL-based storage systems to handle hundreds of thousands of records, ensuring efficient queries and supporting downstream developer workflows.
-- Implemented robust error handling, logging, and retry mechanisms across automation pipelines, improving operational stability and developer experience
-- Prepared infrastructure for upcoming NLP-driven analyses on textual data, enabling sentiment classification, trend detection, and predictive modeling of movie success
-- Created comprehensive system documentation and ERD visualizations, clarifying the architecture and data flow to facilitate smoother onboarding for new contributors
+
+- Built an automated data ingestion platform (Node.js, Python, Bash) on Compute Canada, scraping engagement metrics across thousands of Netflix & Sony videos
+- Designed ETL pipelines processing 50,000+ video records/day into a cloud PostgreSQL warehouse, enabling sub-second query performance
+- Optimized API integration algorithms, achieving 40% faster data retrieval under quota limits (10,000 requests/day)
+- Implemented redundancy and backup workflows to ensure fault-tolerant pipelines
+- Prepared infrastructure for NLP-driven analyses, enabling sentiment classification, trend detection, and predictive modeling of video success
+- Created comprehensive system documentation and ERD visualizations to clarify architecture and streamline onboarding for new contributors

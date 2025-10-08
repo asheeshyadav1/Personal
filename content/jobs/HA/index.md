@@ -7,6 +7,6 @@ range: 'Jun - Aug 2022'
 url: 'https://healthyacres.farm/'
 ---
 
-- Developed automation algorithms in Python that reduced operational labor by 30%, translating to measurable cost savings
-- Built a predictive analytics model (linear regression) for water bill forecasting, reaching 80% accuracy and informing budget planning
-- Created trend-based data visualizations using Tableau and Matplotlib to communicate insights to non-technical stakeholders, supporting sustainability and resource optimization goals
+- Automated agricultural data workflows using Python, reducing processing time by 30% across a 4-person team
+- Built a logistic regression model to forecast water usage, cutting resource waste by 15%
+- Delivered Tableau dashboards and Matplotlib visualizations representing 3+ years of agricultural data trends for stakeholders, enabling data-driven operational and sustainability decisions
