@@ -3,7 +3,7 @@ date: '2017-12-21'
 title: 'Undergraduate Research Assistant'
 company: 'SFU'
 location: 'Burnaby, BC'
-range: 'May - Dec 2025'
+range: 'May - Present'
 url: 'https://www.sfu.ca/beedie.html'
 ---
 
