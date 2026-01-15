@@ -1,9 +1,9 @@
 ---
 date: '2017-12-21'
-title: 'Undergraduate Research Assistant'
-company: 'SFU'
+title: 'Undergraduate Research Assistant (Data Engineering)'
+company: 'Beedie School of Buisness - SFU'
 location: 'Burnaby, BC'
-range: 'May - Present'
+range: 'May - Dec 2026'
 url: 'https://www.sfu.ca/beedie.html'
 ---
 
