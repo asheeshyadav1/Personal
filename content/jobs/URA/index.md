@@ -1,15 +1,18 @@
 ---
-date: '2017-12-21'
+date: '2025-05-01'
 title: 'Undergraduate Research Assistant (Data Engineering)'
-company: 'Beedie School of Buisness - SFU'
+company: 'Beedie School of Business - SFU'
 location: 'Burnaby, BC'
-range: 'May - Dec 2026'
+range: 'May - Dec 2025'
 url: 'https://www.sfu.ca/beedie.html'
 ---
 
-- Built an automated data ingestion platform (Node.js, Python, Bash) on Compute Canada, scraping engagement metrics across thousands of Netflix & Sony videos
-- Designed ETL pipelines processing 50,000+ video records/day into a cloud PostgreSQL warehouse, enabling sub-second query performance
-- Optimized API integration algorithms, achieving 40% faster data retrieval under quota limits (10,000 requests/day)
-- Implemented redundancy and backup workflows to ensure fault-tolerant pipelines
+- Architected automated data ingestion systems on the Compute Canada Graham cluster using Python, Node.js, and Bash, processing 50,000+ records/day with schema validation and fault recovery
+
+- Designed distributed ETL pipelines with incremental synchronization and PostgreSQL warehouse tuning, improving query performance and data integrity across distributed environments
+
+- Increased system throughput by 40% under a 10,000-request/day API quota through caching, rate limiting, and concurrency control
+
 - Prepared infrastructure for NLP-driven analyses, enabling sentiment classification, trend detection, and predictive modeling of video success
+
 - Created comprehensive system documentation and ERD visualizations to clarify architecture and streamline onboarding for new contributors
