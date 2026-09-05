@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import { socialMedia } from '@config';
 import { Icon } from '@components/icons';
 import { useSectionActivation, useReveal, useBeltFocus } from '@hooks';
-import { registerBeltLabel, setBeltCount, setBeltFocus } from '@components/scene/beltStore';
+import { registerBeltLabel, setBeltCount } from '@components/scene/beltStore';
 
 /**
  * Work, as an asteroid belt.
@@ -248,10 +248,16 @@ const StyledPanel = styled.div`
  * A rock's name, anchored to the rock.
  *
  * Positioned by the scene rather than by CSS: the transform is written every
- * frame from the rock's projected position. These are real buttons so the belt
- * can be worked from the keyboard, which a canvas cannot offer.
+ * frame from the rock's projected position.
+ *
+ * Deliberately not interactive. These were buttons that set the belt's focus
+ * directly, but the focus is derived from scroll position — the section is
+ * pinned and one viewport of scroll is one project — so the next scroll frame
+ * overwrote whatever the click set and the panel never changed. A control that
+ * looks live and does nothing is worse than no control, so the labels are inert
+ * text: read the belt by scrolling it.
  */
-const StyledLabel = styled.button`
+const StyledLabel = styled.span`
   position: fixed;
   top: 0;
   left: 0;
@@ -268,8 +274,9 @@ const StyledLabel = styled.button`
      asteroids.js — and the cap here is the backstop for a title long enough to
      overflow from either side. */
   max-width: min(20rem, 32vw);
-  cursor: pointer;
-  pointer-events: auto;
+  display: block;
+  pointer-events: none;
+  user-select: none;
   opacity: 0;
   transform-origin: 0 50%;
   transition: color 0.3s var(--easing);
@@ -283,11 +290,6 @@ const StyledLabel = styled.button`
      the frame instead of off the side of it. */
   &[data-side='right'] {
     text-align: right;
-  }
-
-  &:hover,
-  &:focus-visible {
-    color: var(--lightest-slate);
   }
 `;
 
@@ -485,9 +487,7 @@ const Work = () => {
         {projects.map((item, i) => (
           <StyledLabel
             key={item.node.frontmatter.title}
-            type="button"
             ref={el => registerBeltLabel(i, el)}
-            onClick={() => setBeltFocus(i)}
             data-focused={i === index ? 'true' : 'false'}>
             {item.node.frontmatter.title}
           </StyledLabel>

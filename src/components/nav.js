@@ -108,11 +108,14 @@ const StyledNav = styled.nav`
       position: relative;
       z-index: 1;
 
+      /* The shadow copy of the mark. Dimmed here rather than in the icon, so
+         the accent stays a single decision made by the anchor above. */
       .hex-container {
         position: absolute;
         top: 0;
         left: 0;
         z-index: -1;
+        color: var(--lightest-navy);
         @media (prefers-reduced-motion: no-preference) {
           transition: var(--transition);
         }
@@ -126,9 +129,6 @@ const StyledNav = styled.nav`
           user-select: none;
           @media (prefers-reduced-motion: no-preference) {
             transition: var(--transition);
-          }
-          polygon {
-            fill: var(--navy);
           }
         }
       }

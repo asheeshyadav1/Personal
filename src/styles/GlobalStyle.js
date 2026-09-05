@@ -211,6 +211,11 @@ const GlobalStyle = createGlobalStyle`
     font-size: clamp(40px, 8vw, 60px);
   }
 
+  /* The rule that used to trail these headings is gone. It was a hangover from
+     the template this started as, where a section heading needed something to
+     fill the width beside it. Here the headings sit over a moving starfield,
+     and a flat grey bar across it read as a seam in the page rather than as
+     part of the type. */
   .numbered-heading {
     display: flex;
     align-items: center;
@@ -219,27 +224,6 @@ const GlobalStyle = createGlobalStyle`
     width: 100%;
     font-size: clamp(26px, 5vw, var(--fz-heading));
     white-space: nowrap;
-
-    &:after {
-      content: '';
-      display: block;
-      position: relative;
-      top: -5px;
-      width: 300px;
-      height: 1px;
-      margin-left: 20px;
-      background-color: var(--lightest-navy);
-
-      @media (max-width: 1080px) {
-        width: 200px;
-      }
-      @media (max-width: 768px) {
-        width: 100%;
-      }
-      @media (max-width: 600px) {
-        margin-left: 10px;
-      }
-    }
   }
 
   img,

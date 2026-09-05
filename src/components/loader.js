@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { useMotionPreference } from '@hooks';
 import { IconLoader } from '@components/icons';
+import { AY_STROKES, AY_BOUNDS } from '@components/icons/ayMark';
 
 const StyledLoader = styled.div`
   ${({ theme }) => theme.mixins.flexCenter};
@@ -74,11 +75,6 @@ const GLYPHS =
 const CELL_W = 11;
 const CELL_H = 14;
 
-// The AY mark, in the 84x96 viewBox of IconLogo with its translate(3,3) baked in.
-const A_PATHS = ['M20 64 L29 33.3', 'M29 33.3 L38 64', 'M25 49.5 L33 49.5'];
-const Y_PATH =
-  'M44 33.3 L48.5 33.3 L53 45 L57.5 33.3 L62 33.3 L55.5 50 L55.5 64 L50.5 64 L50.5 50 Z';
-
 /**
  * The letters, and nothing around them.
  *
@@ -88,12 +84,12 @@ const Y_PATH =
  * container — and the container was the part carrying no meaning. Dropped, the
  * same screen belongs entirely to the AY, which is the thing worth reading.
  *
- * The bounding box of the two letters, in the 84x96 viewBox the paths below
- * are drawn in. Scaling is done against this rather than the viewBox, so the
- * letters fill the frame instead of floating in the empty margin the hexagon
- * used to occupy.
+ * The mark's true bounding box, which is not its viewBox: the A's mitred apex
+ * runs well past the point itself. Scaling against the bounds rather than the
+ * box is what makes the letters fill the frame instead of floating inside the
+ * margin the mitre reserves.
  */
-const LETTERS = { x: 20, y: 33.3, w: 42, h: 30.7 };
+const LETTERS = AY_BOUNDS;
 
 /** Letter height as a fraction of the viewport's smaller side. */
 const LETTER_SCALE = 0.42;
@@ -152,19 +148,16 @@ const buildLogoMask = (width, height, cols, rows) => {
 
   ctx.strokeStyle = '#fff';
   ctx.fillStyle = '#fff';
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
+  // Butt caps and mitre joins, matching the SVG. Round caps would bleed the
+  // weave's gaps shut, and the gaps are the only thing carrying the over-under
+  // once the mark is rasterised into a single colour.
+  ctx.lineCap = 'butt';
+  ctx.lineJoin = 'miter';
 
-  // Heavier than the old mark. With nothing drawn around them the letters are
-  // the whole image, and at this size a hairline A reads as thin rather than
-  // as fine.
-  ctx.lineWidth = 6.4;
-  A_PATHS.forEach(d => ctx.stroke(new Path2D(d)));
-
-  const y = new Path2D(Y_PATH);
-  ctx.fill(y);
-  ctx.lineWidth = 3.4;
-  ctx.stroke(y); // fatten the Y to match the weight of the stroked A
+  AY_STROKES.forEach(stroke => {
+    ctx.lineWidth = stroke.w;
+    ctx.stroke(new Path2D(stroke.d));
+  });
 
   const { data } = ctx.getImageData(0, 0, width, height);
   const mask = [];

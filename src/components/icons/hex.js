@@ -1,19 +1,22 @@
 import React from 'react';
+import { AY_STROKES, AY_VIEW_BOX } from './ayMark';
 
+/**
+ * The mark's shadow, sitting behind the nav logo.
+ *
+ * This used to be the filled hexagon the initials sat inside. With the badge
+ * dropped it is a second copy of the monogram instead, offset on hover so the
+ * mark appears to lift off its own shadow — the same gesture the hexagon gave,
+ * now made out of the letters themselves. Dimmed by the nav rather than here,
+ * so the colour stays in one place.
+ */
 const IconHex = () => (
-  <svg id="hex" xmlns="http://www.w3.org/2000/svg" role="img" viewBox="0 0 84 96">
+  <svg id="hex" xmlns="http://www.w3.org/2000/svg" role="img" viewBox={AY_VIEW_BOX}>
     <title>Hexagon</title>
-    <g transform="translate(-8.000000, -2.000000)">
-      <g transform="translate(11.000000, 5.000000)">
-        <polygon
-          stroke="currentColor"
-          strokeWidth="5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          points="39 0 0 22 0 67 39 90 78 68 78 23"
-          fill="currentColor"
-        />
-      </g>
+    <g stroke="currentColor" strokeLinecap="butt" strokeLinejoin="miter" fill="none">
+      {AY_STROKES.map(stroke => (
+        <path key={stroke.d} d={stroke.d} strokeWidth={stroke.w} />
+      ))}
     </g>
   </svg>
 );
