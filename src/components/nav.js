@@ -17,12 +17,41 @@ const StyledHeader = styled.header`
   padding: 0px 50px;
   width: 100%;
   height: var(--nav-height);
-  background-color: rgba(10, 25, 47, 0.85);
+  background-color: transparent;
   filter: none !important;
   pointer-events: auto !important;
   user-select: auto !important;
-  backdrop-filter: blur(10px);
   transition: var(--transition);
+
+  /**
+   * The scrim, rather than a background on the header itself. A flat band with
+   * a hard bottom edge reads as a bar laid over the starfield; this fades both
+   * the tint and the blur out to nothing, so the nav dissolves into the scene
+   * instead of ending at a line. It hangs below the header so the falloff has
+   * somewhere to happen.
+   */
+  &:before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: -55px;
+    pointer-events: none;
+    background: linear-gradient(
+      to bottom,
+      rgba(15, 15, 15, 0.9) 0%,
+      rgba(15, 15, 15, 0.72) 38%,
+      rgba(15, 15, 15, 0.32) 68%,
+      rgba(15, 15, 15, 0) 100%
+    );
+    backdrop-filter: blur(9px);
+    /* Feathers the blur on the same curve as the tint, so the frosted area has
+       no edge of its own. */
+    -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 42%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 0%, #000 42%, transparent 100%);
+    transition: opacity 0.25s var(--easing);
+  }
 
   @media (max-width: 1080px) {
     padding: 0 40px;
@@ -33,22 +62,29 @@ const StyledHeader = styled.header`
 
   @media (prefers-reduced-motion: no-preference) {
     ${props =>
-    props.scrollDirection === 'up' &&
+      props.scrollDirection === 'up' &&
       !props.scrolledToTop &&
       css`
         height: var(--nav-scroll-height);
         transform: translateY(0px);
-        background-color: rgba(10, 25, 47, 0.85);
-        box-shadow: 0 10px 30px -10px var(--navy-shadow);
       `};
 
     ${props =>
-    props.scrollDirection === 'down' &&
+      props.scrollDirection === 'down' &&
       !props.scrolledToTop &&
       css`
         height: var(--nav-scroll-height);
         transform: translateY(calc(var(--nav-scroll-height) * -1));
-        box-shadow: 0 10px 30px -10px var(--navy-shadow);
+      `};
+
+    /* Over the hero there is nothing to sit on top of, so the scrim lifts away
+       entirely and the nav floats on the stars. */
+    ${props =>
+      props.scrolledToTop &&
+      css`
+        &:before {
+          opacity: 0.55;
+        }
       `};
   }
 `;
@@ -59,7 +95,6 @@ const StyledNav = styled.nav`
   width: 100%;
   color: var(--lightest-slate);
   font-family: var(--font-mono);
-  counter-reset: item 0;
   z-index: 12;
 
   .logo {
@@ -126,19 +161,10 @@ const StyledLinks = styled.div`
     li {
       margin: 0 5px;
       position: relative;
-      counter-increment: item 1;
       font-size: var(--fz-xs);
 
       a {
         padding: 10px;
-
-        &:before {
-          content: '0' counter(item) '.';
-          margin-right: 5px;
-          color: var(--green);
-          font-size: var(--fz-xxs);
-          text-align: right;
-        }
       }
     }
   }

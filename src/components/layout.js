@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import styled, { ThemeProvider } from 'styled-components';
-import { Head, Loader, Nav, Social, Email, Footer } from '@components';
+import { Head, Loader, Nav, Social, Email, Footer, ScrollProgress, SceneCanvas } from '@components';
 import { GlobalStyle, theme } from '@styles';
 
 const StyledContent = styled.div`
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  min-height: 100dvh;
 `;
 
 const Layout = ({ children, location }) => {
@@ -58,20 +58,30 @@ const Layout = ({ children, location }) => {
             Skip to Content
           </a>
 
-          {isLoading && isHome ? (
-            <Loader finishLoading={() => setIsLoading(false)} />
-          ) : (
-            <StyledContent>
-              <Nav isHome={isHome} />
-              <Social isHome={isHome} />
-              <Email isHome={isHome} />
+          {/*
+            The loader is laid over the page rather than swapped in for it.
+            Rendering it instead of the content meant the server-rendered HTML
+            of the home page was the loader and nothing else: no headline, no
+            work, no copy for a crawler or a slow connection to show, and a
+            Largest Contentful Paint that could not begin until the animation
+            had finished and React had mounted the real page. It covers the
+            viewport on its own, so there is nothing to gain by hiding what is
+            underneath it.
+          */}
+          {isLoading && isHome && <Loader finishLoading={() => setIsLoading(false)} />}
 
-              <div id="content">
-                {children}
-                <Footer />
-              </div>
-            </StyledContent>
-          )}
+          <StyledContent>
+            <SceneCanvas />
+            <ScrollProgress />
+            <Nav isHome={isHome} />
+            <Social isHome={isHome} />
+            <Email isHome={isHome} />
+
+            <div id="content">
+              {children}
+              <Footer />
+            </div>
+          </StyledContent>
         </ThemeProvider>
       </div>
     </>

@@ -1,166 +1,283 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useStaticQuery, graphql } from 'gatsby';
-import { CSSTransition } from 'react-transition-group';
-import styled from 'styled-components';
-import { srConfig } from '@config';
-import { KEY_CODES } from '@utils';
-import sr from '@utils/sr';
-import { usePrefersReducedMotion } from '@hooks';
+import styled, { keyframes } from 'styled-components';
+import { useSectionActivation, useReveal } from '@hooks';
+import { setFormationVariant } from '@components/scene/sceneStore';
+
+/** Beats of scroll spent on each role before the next one takes the panel. */
+const STEPS_PER_JOB = 5;
 
 const StyledJobsSection = styled.section`
-  max-width: 700px;
-
-  .inner {
-    display: flex;
-
-    @media (max-width: 600px) {
-      display: block;
-    }
-
-    // Prevent container from jumping
-    @media (min-width: 700px) {
-      min-height: 340px;
-    }
-  }
-`;
-
-const StyledTabList = styled.div`
   position: relative;
-  z-index: 3;
-  width: max-content;
-  padding: 0;
-  margin: 0;
-  list-style: none;
+  z-index: 1;
+  max-width: none;
+  /* Enough scroll for each role to hold the panel, plus a lead-in. */
+  min-height: 300vh;
 
-  @media (max-width: 600px) {
-    display: flex;
-    overflow-x: auto;
-    width: calc(100% + 100px);
-    padding-left: 50px;
-    margin-left: -50px;
-    margin-bottom: 30px;
-  }
-  @media (max-width: 480px) {
-    width: calc(100% + 50px);
-    padding-left: 25px;
-    margin-left: -25px;
-  }
-
-  li {
-    &:first-of-type {
-      @media (max-width: 600px) {
-        margin-left: 50px;
-      }
-      @media (max-width: 480px) {
-        margin-left: 25px;
-      }
-    }
-    &:last-of-type {
-      @media (max-width: 600px) {
-        padding-right: 50px;
-      }
-      @media (max-width: 480px) {
-        padding-right: 25px;
-      }
-    }
+  @media (max-width: 1080px) {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 100px 0;
+    min-height: 0;
   }
 `;
 
-const StyledTabButton = styled.button`
-  ${({ theme }) => theme.mixins.link};
-  display: flex;
-  align-items: center;
-  width: 100%;
-  height: var(--tab-height);
-  padding: 0 20px 2px;
-  border-left: 2px solid var(--lightest-navy);
-  background-color: transparent;
-  color: ${({ isActive }) => (isActive ? 'var(--green)' : 'var(--slate)')};
-  font-family: var(--font-mono);
-  font-size: var(--fz-xs);
-  text-align: left;
-  white-space: nowrap;
-
-  @media (max-width: 768px) {
-    padding: 0 15px 2px;
-  }
-  @media (max-width: 600px) {
-    ${({ theme }) => theme.mixins.flexCenter};
-    min-width: 120px;
-    padding: 0 15px;
-    border-left: 0;
-    border-bottom: 2px solid var(--lightest-navy);
-    text-align: center;
-  }
-
-  &:hover,
-  &:focus {
-    background-color: var(--light-navy);
-  }
-`;
-
-const StyledHighlight = styled.div`
-  position: absolute;
+/**
+ * Pins to the viewport while the section scrolls past, so the rail and the
+ * panel stay put and only their *contents* change as you move through the
+ * roles — the reader tracks one panel instead of chasing four.
+ */
+const StyledStage = styled.div`
+  position: sticky;
   top: 0;
-  left: 0;
-  z-index: 10;
-  width: 2px;
-  height: var(--tab-height);
-  border-radius: var(--border-radius);
-  background: var(--green);
-  transform: translateY(calc(${({ activeTabId }) => activeTabId} * var(--tab-height)));
-  transition: transform 0.25s cubic-bezier(0.645, 0.045, 0.355, 1);
-  transition-delay: 0.1s;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  /* Leaves the right of the screen to the scene's ring. */
+  width: min(52rem, 54vw);
 
-  @media (max-width: 600px) {
-    top: auto;
-    bottom: 0;
+  @media (max-width: 1080px) {
+    position: static;
+    min-height: 0;
     width: 100%;
-    max-width: var(--tab-width);
-    height: 2px;
-    margin-left: 50px;
-    transform: translateX(calc(${({ activeTabId }) => activeTabId} * var(--tab-width)));
-  }
-  @media (max-width: 480px) {
-    margin-left: 25px;
   }
 `;
 
-const StyledTabPanels = styled.div`
+/**
+ * The roles as stations on a single horizontal run, oldest at the left. The
+ * filled portion of the line doubles as the section's own progress bar.
+ */
+const StyledTrack = styled.ol`
   position: relative;
-  width: 100%;
-  margin-left: 20px;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 0;
+  list-style: none;
+  margin: 34px 0 46px;
+  padding: 0;
 
-  @media (max-width: 600px) {
-    margin-left: 0;
+  /* The run itself, behind the stations. */
+  &:before,
+  .track-fill {
+    content: '';
+    position: absolute;
+    top: 5px;
+    left: 0;
+    height: 1px;
+  }
+
+  /* Stops on the last station rather than trailing past it. */
+  &:before {
+    width: var(--line-end);
+    background-color: var(--lightest-navy);
+  }
+
+  .track-fill {
+    width: var(--fill);
+    background-color: var(--green);
+    transition: width 0.6s var(--easing);
+  }
+
+  li button {
+    position: relative;
+    display: block;
+    width: 100%;
+    padding: 20px 12px 0 0;
+    background: transparent;
+    border: 0;
+    text-align: left;
+    cursor: pointer;
+
+    /* The station marker sitting on the run. */
+    &:before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      border: 1px solid var(--dark-slate);
+      background-color: var(--navy);
+      transition: var(--transition);
+    }
+  }
+
+  .station-company {
+    color: var(--slate);
+    font-size: var(--fz-sm);
+    margin: 0;
+    transition: var(--transition);
+  }
+
+  .station-year {
+    color: var(--dark-slate);
+    font-family: var(--font-mono);
+    font-size: var(--fz-xxs);
+    margin: 3px 0 0;
+  }
+
+  li button:hover .station-company,
+  li button:focus-visible .station-company {
+    color: var(--light-slate);
+  }
+
+  li[aria-current='true'] button {
+    &:before {
+      background-color: var(--green);
+      border-color: var(--green);
+      box-shadow: 0 0 0 5px var(--green-tint);
+    }
+    .station-company {
+      color: var(--green);
+    }
+  }
+
+  @media (max-width: 1080px) {
+    grid-auto-flow: row;
+    grid-auto-columns: auto;
+
+    &:before {
+      top: 0;
+      left: 5px;
+      width: 1px;
+      height: var(--line-end);
+    }
+    .track-fill {
+      top: 0;
+      left: 5px;
+      width: 1px;
+      height: var(--fill);
+      transition: height 0.6s var(--easing);
+    }
+
+    li button {
+      padding: 12px 0 12px 26px;
+      &:before {
+        top: 14px;
+      }
+    }
   }
 `;
 
-const StyledTabPanel = styled.div`
-  width: 100%;
-  height: auto;
-  padding: 10px 5px;
+/* Each role swaps in place, so the change is legible as a change. */
+const enter = keyframes`
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+`;
 
-  ul {
-    ${({ theme }) => theme.mixins.fancyList};
-  }
-
-  h3 {
-    margin-bottom: 2px;
-    font-size: var(--fz-xxl);
-    font-weight: 500;
-    line-height: 1.3;
+const StyledPanel = styled.div`
+  .role-title {
+    color: var(--lightest-slate);
+    font-size: clamp(20px, 2vw, 25px);
+    line-height: 1.25;
+    margin: 0;
 
     .company {
       color: var(--green);
     }
   }
 
-  .range {
-    margin-bottom: 25px;
-    color: var(--light-slate);
+  .role-meta {
+    color: var(--slate);
     font-family: var(--font-mono);
     font-size: var(--fz-xs);
+    margin: 8px 0 0;
+  }
+
+  /* Keyed on the active role so the animation replays on every swap. */
+  .role-body {
+    animation: ${enter} 0.5s var(--easing) both;
+  }
+`;
+
+/**
+ * The numbers first. This is what a reader actually scans for, and it is the
+ * part a wall of bullets buries.
+ */
+const StyledMetrics = styled.dl`
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  margin: 28px 0;
+  padding: 0;
+  background-color: var(--lightest-navy);
+  border: 1px solid var(--lightest-navy);
+
+  > div {
+    padding: 16px 18px;
+    background-color: var(--navy);
+  }
+
+  dt {
+    color: var(--white);
+    font-family: var(--font-mono);
+    font-size: clamp(19px, 1.9vw, 24px);
+    line-height: 1.1;
+  }
+
+  dd {
+    color: var(--slate);
+    font-size: var(--fz-xs);
+    line-height: 1.35;
+    margin: 7px 0 0;
+  }
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+/* Short, one-line-each highlights — the detail lives on the résumé. */
+const StyledHighlights = styled.div`
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  li {
+    position: relative;
+    padding-left: 22px;
+    margin-bottom: 11px;
+    color: var(--light-slate);
+    font-size: var(--fz-sm);
+    line-height: 1.45;
+
+    &:before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0.62em;
+      width: 8px;
+      height: 1px;
+      background-color: var(--dark-slate);
+    }
+
+    strong {
+      color: var(--lightest-slate);
+      font-weight: 600;
+    }
+  }
+`;
+
+const StyledStack = styled.ul`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  margin: 26px 0 0;
+  padding: 0;
+
+  li {
+    padding: 4px 10px;
+    border: 1px solid var(--lightest-navy);
+    border-radius: var(--border-radius);
+    color: var(--slate);
+    font-family: var(--font-mono);
+    font-size: var(--fz-xxs);
   }
 `;
 
@@ -176,9 +293,15 @@ const Jobs = () => {
             frontmatter {
               title
               company
+              short
               location
               range
               url
+              stack
+              metrics {
+                value
+                label
+              }
             }
             html
           }
@@ -187,122 +310,108 @@ const Jobs = () => {
     }
   `);
 
-  const jobsData = data.jobs.edges;
+  // Oldest first, so the rail reads left-to-right as a career, not a résumé.
+  const jobsData = [...data.jobs.edges].reverse();
+  const { ref: sectionRef, step } = useSectionActivation(
+    'jobs',
+    jobsData.length * STEPS_PER_JOB + 2,
+  );
+  const headingRef = useReveal(step >= 1, 1.2, true);
+  const panelRef = useReveal(step >= 2, 0.9, true);
 
-  const [activeTabId, setActiveTabId] = useState(0);
-  const [tabFocus, setTabFocus] = useState(null);
-  const tabs = useRef([]);
-  const revealContainer = useRef(null);
-  const prefersReducedMotion = usePrefersReducedMotion();
+  // Scroll walks along the rail; clicking a station jumps straight to one.
+  const [pinnedIndex, setPinnedIndex] = useState(null);
+  const scrolledIndex = Math.min(
+    jobsData.length - 1,
+    Math.max(0, Math.floor((step - 2) / STEPS_PER_JOB)),
+  );
+  const activeIndex = pinnedIndex === null ? scrolledIndex : pinnedIndex;
 
+  // A manual pick holds until the reader scrolls to a different role.
   useEffect(() => {
-    if (prefersReducedMotion) {
-      return;
+    if (pinnedIndex !== null && scrolledIndex !== pinnedIndex) {
+      setPinnedIndex(null);
     }
+  }, [scrolledIndex]);
 
-    sr.reveal(revealContainer.current, srConfig());
-  }, []);
+  // How far along the roles we are, which picks the scene's constellation. A
+  // fraction rather than an index so the run of figures always spans the roles,
+  // however many of them there turn out to be.
+  useEffect(
+    () => setFormationVariant((activeIndex + 1) / jobsData.length),
+    [activeIndex, jobsData.length],
+  );
 
-  const focusTab = () => {
-    if (tabs.current[tabFocus]) {
-      tabs.current[tabFocus].focus();
-      return;
-    }
-    // If we're at the end, go to the start
-    if (tabFocus >= tabs.current.length) {
-      setTabFocus(0);
-    }
-    // If we're at the start, move to the end
-    if (tabFocus < 0) {
-      setTabFocus(tabs.current.length - 1);
-    }
-  };
+  const { frontmatter, html } = jobsData[activeIndex].node;
+  const metrics = frontmatter.metrics || [];
+  const stack = frontmatter.stack || [];
 
-  // Only re-run the effect if tabFocus changes
-  useEffect(() => focusTab(), [tabFocus]);
-
-  // Focus on tabs when using up & down arrow keys
-  const onKeyDown = e => {
-    switch (e.key) {
-      case KEY_CODES.ARROW_UP: {
-        e.preventDefault();
-        setTabFocus(tabFocus - 1);
-        break;
-      }
-
-      case KEY_CODES.ARROW_DOWN: {
-        e.preventDefault();
-        setTabFocus(tabFocus + 1);
-        break;
-      }
-
-      default: {
-        break;
-      }
-    }
-  };
+  // Stations sit at the start of their column, so the run ends on the last one
+  // and the fill ends on the active one.
+  const columns = jobsData.length;
+  const lineEnd = `${((columns - 1) / columns) * 100}%`;
+  const fill = `${(activeIndex / columns) * 100}%`;
 
   return (
-    <StyledJobsSection id="jobs" ref={revealContainer}>
-      <h2 className="numbered-heading">Where I’ve Worked</h2>
+    <StyledJobsSection id="jobs" ref={sectionRef}>
+      <StyledStage>
+        <h2 className="numbered-heading" ref={headingRef}>
+          Experience
+        </h2>
 
-      <div className="inner">
-        <StyledTabList role="tablist" aria-label="Job tabs" onKeyDown={e => onKeyDown(e)}>
-          {jobsData &&
-            jobsData.map(({ node }, i) => {
-              const { company } = node.frontmatter;
-              return (
-                <StyledTabButton
-                  key={i}
-                  isActive={activeTabId === i}
-                  onClick={() => setActiveTabId(i)}
-                  ref={el => (tabs.current[i] = el)}
-                  id={`tab-${i}`}
-                  role="tab"
-                  tabIndex={activeTabId === i ? '0' : '-1'}
-                  aria-selected={activeTabId === i ? true : false}
-                  aria-controls={`panel-${i}`}>
-                  <span>{company}</span>
-                </StyledTabButton>
-              );
-            })}
-          <StyledHighlight activeTabId={activeTabId} />
-        </StyledTabList>
+        <StyledTrack style={{ '--line-end': lineEnd }}>
+          <span className="track-fill" style={{ '--fill': fill }} aria-hidden="true" />
+          {jobsData.map(({ node }, i) => (
+            <li key={node.frontmatter.company} aria-current={activeIndex === i}>
+              <button type="button" onClick={() => setPinnedIndex(i)}>
+                <p className="station-company">
+                  {node.frontmatter.short || node.frontmatter.company}
+                </p>
+                <p className="station-year">{node.frontmatter.range}</p>
+              </button>
+            </li>
+          ))}
+        </StyledTrack>
 
-        <StyledTabPanels>
-          {jobsData &&
-            jobsData.map(({ node }, i) => {
-              const { frontmatter, html } = node;
-              const { title, url, company, range } = frontmatter;
+        <StyledPanel ref={panelRef}>
+          <div className="role-body" key={activeIndex}>
+            <h3 className="role-title">
+              {frontmatter.title}
+              <span className="company">
+                {' '}
+                @{' '}
+                <a href={frontmatter.url} className="inline-link" target="_blank" rel="noreferrer">
+                  {frontmatter.company}
+                </a>
+              </span>
+            </h3>
+            <p className="role-meta">
+              {frontmatter.range} · {frontmatter.location}
+            </p>
 
-              return (
-                <CSSTransition key={i} in={activeTabId === i} timeout={250} classNames="fade">
-                  <StyledTabPanel
-                    id={`panel-${i}`}
-                    role="tabpanel"
-                    tabIndex={activeTabId === i ? '0' : '-1'}
-                    aria-labelledby={`tab-${i}`}
-                    aria-hidden={activeTabId !== i}
-                    hidden={activeTabId !== i}>
-                    <h3>
-                      <span>{title}</span>
-                      <span className="company">
-                        &nbsp;@&nbsp;
-                        <a href={url} className="inline-link">
-                          {company}
-                        </a>
-                      </span>
-                    </h3>
+            {metrics.length > 0 && (
+              <StyledMetrics>
+                {metrics.map(m => (
+                  <div key={m.label}>
+                    <dt>{m.value}</dt>
+                    <dd>{m.label}</dd>
+                  </div>
+                ))}
+              </StyledMetrics>
+            )}
 
-                    <p className="range">{range}</p>
+            <StyledHighlights dangerouslySetInnerHTML={{ __html: html }} />
 
-                    <div dangerouslySetInnerHTML={{ __html: html }} />
-                  </StyledTabPanel>
-                </CSSTransition>
-              );
-            })}
-        </StyledTabPanels>
-      </div>
+            {stack.length > 0 && (
+              <StyledStack>
+                {stack.map(s => (
+                  <li key={s}>{s}</li>
+                ))}
+              </StyledStack>
+            )}
+          </div>
+        </StyledPanel>
+      </StyledStage>
     </StyledJobsSection>
   );
 };

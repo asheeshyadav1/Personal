@@ -1,8 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import styled from 'styled-components';
-import { srConfig, email } from '@config';
-import sr from '@utils/sr';
-import { usePrefersReducedMotion } from '@hooks';
+import { email } from '@config';
+import { useMagnetic, useSectionActivation, useReveal } from '@hooks';
 
 const StyledContactSection = styled.section`
   max-width: 600px;
@@ -11,24 +10,6 @@ const StyledContactSection = styled.section`
 
   @media (max-width: 768px) {
     margin: 0 auto 50px;
-  }
-
-  .overline {
-    display: block;
-    margin-bottom: 20px;
-    color: var(--green);
-    font-family: var(--font-mono);
-    font-size: var(--fz-md);
-    font-weight: 400;
-
-    &:before {
-      bottom: 0;
-      font-size: var(--fz-sm);
-    }
-
-    &:after {
-      display: none;
-    }
   }
 
   .title {
@@ -42,31 +23,28 @@ const StyledContactSection = styled.section`
 `;
 
 const Contact = () => {
-  const revealContainer = useRef(null);
-  const prefersReducedMotion = usePrefersReducedMotion();
-
-  useEffect(() => {
-    if (prefersReducedMotion) {
-      return;
-    }
-
-    sr.reveal(revealContainer.current, srConfig());
-  }, []);
+  const ctaRef = useMagnetic();
+  const { ref: sectionRef, step } = useSectionActivation('contact', 8);
+  const titleRef = useReveal(step >= 1, 1.6);
+  const bodyRef = useReveal(step >= 2, 0.8);
+  const buttonRef = useReveal(step >= 3, 1.2);
 
   return (
-    <StyledContactSection id="contact" ref={revealContainer}>
-      <h2 className="numbered-heading overline">What’s Next?</h2>
+    <StyledContactSection id="contact" ref={sectionRef}>
+      <h2 className="title" ref={titleRef}>
+        Get in touch
+      </h2>
 
-      <h2 className="title">Get In Touch</h2>
-
-      <p>
-        I’m always happy to connect and explore new opportunities. 
-        If you’d like to chat or have a question, my inbox is open.
+      <p ref={bodyRef}>
+        I’m looking for new grad and internship roles, and I’m happy to talk about anything here. My
+        inbox is open.
       </p>
 
-      <a className="email-link" href={`mailto:${email}`}>
-        Say Hello
-      </a>
+      <span ref={buttonRef}>
+        <a ref={ctaRef} className="email-link" href={`mailto:${email}`}>
+          Email me
+        </a>
+      </span>
     </StyledContactSection>
   );
 };

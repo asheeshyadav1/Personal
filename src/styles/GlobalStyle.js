@@ -105,7 +105,7 @@ const GlobalStyle = createGlobalStyle`
   }
 
   #root {
-    min-height: 100vh;
+    min-height: 100dvh;
     display: grid;
     grid-template-rows: 1fr auto;
     grid-template-columns: 100%;
@@ -115,7 +115,7 @@ const GlobalStyle = createGlobalStyle`
     margin: 0 auto;
     width: 100%;
     max-width: 1600px;
-    min-height: 100vh;
+    min-height: 100dvh;
     padding: 200px 150px;
 
     @media (max-width: 1080px) {
@@ -187,23 +187,6 @@ const GlobalStyle = createGlobalStyle`
     width: 100%;
     font-size: clamp(26px, 5vw, var(--fz-heading));
     white-space: nowrap;
-
-    &:before {
-      position: relative;
-      bottom: 4px;
-      counter-increment: section;
-      content: '0' counter(section) '.';
-      margin-right: 10px;
-      color: var(--green);
-      font-family: var(--font-mono);
-      font-size: clamp(var(--fz-md), 3vw, var(--fz-xl));
-      font-weight: 400;
-
-      @media (max-width: 480px) {
-        margin-bottom: -3px;
-        margin-right: 5px;
-      }
-    }
 
     &:after {
       content: '';

@@ -2,20 +2,34 @@ import { css } from 'styled-components';
 
 const variables = css`
   :root {
-    --dark-navy: #020c1b;
-    --navy: #0a192f;
-    --light-navy: #112240;
-    --lightest-navy: #233554;
-    --navy-shadow: rgba(2, 12, 27, 0.7);
-    --dark-slate: #495670;
-    --slate: #8892b0;
-    --light-slate: #a8b2d1;
-    --lightest-slate: #ccd6f6;
-    --white: #e6f1ff;
-    --green: #64ffda;
-    --green-tint: rgba(100, 255, 218, 0.1);
-    --pink: #f57dff;
-    --blue: #57cbff;
+    /* Palette: see src/components/scene/palettes.js — that file is the source
+       of truth, and these are the values for DEFAULT_PALETTE, inlined here so a
+       normal page load paints the right colours before any JS runs. Preview
+       another with ?palette=<key>.
+
+       Variable names are kept from the original navy/green theme so every
+       consumer keeps working — read them as roles: --navy = page background,
+       --green = accent. The darks sit in a narrow range and carry a faint cast
+       rather than being true grey, which is what holds the matte finish. */
+    --dark-navy: #04070c;
+    --navy: #0a0e14;
+    --light-navy: #141b23;
+    --lightest-navy: #232d38;
+    --navy-shadow: rgba(0, 3, 10, 0.7);
+    --dark-slate: #4c5866;
+    --slate: #8492a3;
+    --light-slate: #a8b5c4;
+    --lightest-slate: #ccd7e4;
+    --white: #eef4fb;
+    --green: #cfe3ff;
+    --green-tint: rgba(207, 227, 255, 0.1);
+    --pink: #b9c9e0;
+    --blue: #9fc0e8;
+
+    /* Consumed by the scene's scrim and matte overlays. */
+    --scrim-rgb: 10, 14, 20;
+    --matte-lift: 30, 42, 56;
+    --matte-deep: 2, 4, 8;
 
     --font-sans: 'Calibre', 'Inter', 'San Francisco', 'SF Pro Text', -apple-system, system-ui,
       sans-serif;
@@ -31,8 +45,8 @@ const variables = css`
     --fz-heading: 32px;
 
     --border-radius: 4px;
-    --nav-height: 100px;
-    --nav-scroll-height: 70px;
+    --nav-height: 72px;
+    --nav-scroll-height: 60px;
 
     --tab-height: 42px;
     --tab-width: 120px;

@@ -1,6 +1,7 @@
 ---
 date: '2018-05-01'
 title: 'Iterative Solvers for Sparse Linear Systems'
+category: 'Numerical Computing'
 github: 'https://github.com/asheeshyadav1/Sparse-Linear-Systems'
 tech:
   - MATLAB

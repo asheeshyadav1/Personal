@@ -1,3 +1,9 @@
 export { default as useOnClickOutside } from './useOnClickOutside';
 export { default as usePrefersReducedMotion } from './usePrefersReducedMotion';
 export { default as useScrollDirection } from './useScrollDirection';
+export { default as useMagnetic } from './useMagnetic';
+export { default as useTilt } from './useTilt';
+export { default as useSectionActivation } from './useSectionActivation';
+export { default as useReveal } from './useReveal';
+export { default as useFormationPresence } from './useFormationPresence';
+export { default as useBeltFocus } from './useBeltFocus';

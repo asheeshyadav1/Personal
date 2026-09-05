@@ -1,6 +1,7 @@
 ---
 date: '2025-05-01'
 title: 'Concurrent MapReduce Framework'
+category: 'Systems & Concurrency'
 github: 'https://github.com/SFU-CMPT-201/a10-asheeshyadav1'
 tech:
   - C Programming

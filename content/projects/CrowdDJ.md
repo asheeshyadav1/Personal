@@ -1,6 +1,7 @@
 ---
 date: '2025-01-01'
 title: 'Adaptive Quadrature and Convergence Analysis'
+category: 'Numerical Computing'
 github: 'https://github.com/asheeshyadav1/Adaptive-Quadrature-and-Convergence-Analysis'
 
 tech:

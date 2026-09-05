@@ -1,6 +1,7 @@
 ---
 date: '2016-04-01'
 title: 'Implementation and Analysis of Newton’s Method'
+category: 'Numerical Computing'
 github: 'https://github.com/asheeshyadav1/Newtons-Method'
 tech:
   - Root-finding algorithms (Newton's Method)

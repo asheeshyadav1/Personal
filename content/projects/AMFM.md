@@ -1,6 +1,7 @@
 ---
 date: '2025-01-01'
 title: 'Performance Analysis of Linear Algebra Algorithms'
+category: 'Numerical Computing'
 github: 'https://github.com/asheeshyadav1/Performance-Analysis-of-Linear-Algebra-Algorithms'
 tech:
   - Computational Complexity

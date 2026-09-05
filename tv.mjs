@@ -1,0 +1,12 @@
+import * as THREE from '/Users/asheeshyadav/Desktop/Personal/Portfolio/Personal/node_modules/three/build/three.module.js';
+import { setThree, createVoyagerProbeModel } from '/Users/asheeshyadav/Desktop/Personal/Portfolio/Personal/src/components/scene/voyagerModel.js';
+setThree(THREE);
+const g = createVoyagerProbeModel({ geometryOnly: true });
+let meshes=0, verts=0, tris=0; const names=[];
+g.traverse(o=>{ if(o.isMesh){ meshes++; names.push(o.name||'(unnamed)');
+  const p=o.geometry.attributes.position; verts+=p.count;
+  tris += o.geometry.index ? o.geometry.index.count/3 : p.count/3; }});
+const box=new THREE.Box3().setFromObject(g), s=box.getSize(new THREE.Vector3());
+console.log('meshes',meshes,'verts',verts,'tris',Math.round(tris));
+console.log('bbox', s.x.toFixed(2), s.y.toFixed(2), s.z.toFixed(2));
+console.log('names:', names.join(', ').slice(0,400));

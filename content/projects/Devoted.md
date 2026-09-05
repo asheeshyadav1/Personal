@@ -1,6 +1,7 @@
 ---
 date: '2024-06-01'
 title: 'Auggie The Therapist'
+category: 'AI & Web'
 github: 'https://github.com/asheeshyadav1/Auggie-the-Therapist'
 external: 'https://gem-gamma-beryl.vercel.app/'
 tech:

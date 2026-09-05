@@ -74,7 +74,7 @@ const StyledHamburgerButton = styled.button`
       top: ${props => (props.menuOpen ? `0` : `-10px`)};
       opacity: ${props => (props.menuOpen ? 0 : 1)};
       transition: ${({ menuOpen }) =>
-    menuOpen ? 'var(--ham-before-active)' : 'var(--ham-before)'};
+        menuOpen ? 'var(--ham-before-active)' : 'var(--ham-before)'};
     }
     &:after {
       width: ${props => (props.menuOpen ? `100%` : `80%`)};
@@ -96,7 +96,7 @@ const StyledSidebar = styled.aside`
     right: 0;
     padding: 50px 10px;
     width: min(75vw, 400px);
-    height: 100vh;
+    height: 100dvh;
     outline: 0;
     background-color: var(--light-navy);
     box-shadow: -10px 0px 30px -15px var(--navy-shadow);
@@ -124,19 +124,10 @@ const StyledSidebar = styled.aside`
     li {
       position: relative;
       margin: 0 auto 20px;
-      counter-increment: item 1;
       font-size: clamp(var(--fz-sm), 4vw, var(--fz-lg));
 
       @media (max-width: 600px) {
         margin: 0 auto 10px;
-      }
-
-      &:before {
-        content: '0' counter(item) '.';
-        display: block;
-        margin-bottom: 5px;
-        color: var(--green);
-        font-size: var(--fz-sm);
       }
     }
 
