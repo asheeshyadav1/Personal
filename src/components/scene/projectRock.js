@@ -64,7 +64,8 @@ const FRAGMENT = `
   uniform vec3 uCore;
   uniform float uFocus;
   uniform float uSeed;
-  uniform float uOpacity;
+  uniform float uDim;
+  uniform float uFade;
 
   varying vec3 vLocal;
   varying vec3 vNormal;
@@ -113,7 +114,13 @@ const FRAGMENT = `
     float fres = pow(1.0 - clamp(dot(normalize(vNormal), normalize(vView)), 0.0, 1.0), 2.4);
     colour += mix(uGlow, uCore, 0.35) * fres * (0.5 + uFocus * 0.9);
 
-    gl_FragColor = vec4(colour * uOpacity, 1.0);
+    // uDim is distance: a far rock is a darker rock, and stays solid.
+    // uFade is presence, and it has to reach the *alpha*. Folding it into the
+    // colour instead — which is what this line used to do — left a fading rock
+    // as a fully opaque, depth-writing black ball sitting in front of the
+    // stars, which is exactly what the last asteroid did on the way out of the
+    // belt and into Contact.
+    gl_FragColor = vec4(colour * uDim, uFade);
   }
 `;
 
@@ -156,8 +163,11 @@ export const createProjectRock = (THREE, palette, radius, seed) => {
   const material = new THREE.ShaderMaterial({
     vertexShader: VERTEX,
     fragmentShader: FRAGMENT,
-    // Opaque and depth-writing on purpose: occluding the stars behind it is
-    // the whole reason this is a mesh and not more points.
+    // Depth-writing on purpose: occluding the stars behind it is the whole
+    // reason this is a mesh and not more points. `transparent` is toggled by
+    // the belt as a rock fades — see setFade — so that at full presence the
+    // rock is a genuinely opaque body, and only while it is leaving does it
+    // become something to blend away.
     transparent: false,
     depthWrite: true,
     uniforms: {
@@ -166,11 +176,27 @@ export const createProjectRock = (THREE, palette, radius, seed) => {
       uCore: { value: new THREE.Color(palette.core) },
       uFocus: { value: 0 },
       uSeed: { value: seed },
-      uOpacity: { value: 1 },
+      uDim: { value: 1 },
+      uFade: { value: 1 },
     },
   });
 
   const mesh = new THREE.Mesh(geometry, material);
+
+  /**
+   * How present the rock is, 0 to 1.
+   *
+   * Below 1 it blends rather than occludes, and it stops writing depth so it
+   * cannot punch a hole in the starfield it is no longer solid enough to
+   * hide. At 0 it is not drawn at all.
+   */
+  const setFade = value => {
+    const fade = Math.max(0, Math.min(1, value));
+    material.uniforms.uFade.value = fade;
+    material.transparent = fade < 0.999;
+    material.depthWrite = fade >= 0.999;
+    return fade;
+  };
   // A tumble axis of its own, so the field does not rotate in lockstep.
   mesh.userData.spin = {
     x: (Math.random() - 0.5) * 0.16,
@@ -178,7 +204,7 @@ export const createProjectRock = (THREE, palette, radius, seed) => {
     z: (Math.random() - 0.5) * 0.12,
   };
 
-  return { mesh, material, geometry };
+  return { mesh, material, geometry, setFade };
 };
 
 export default createProjectRock;

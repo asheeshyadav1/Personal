@@ -114,6 +114,7 @@ const StyledWorkSection = styled.section`
 const StyledStage = styled.div`
   position: sticky;
   top: 0;
+  min-height: 100vh; /* Fallback for Edge before 108. */
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
@@ -121,6 +122,9 @@ const StyledStage = styled.div`
   align-items: center;
   width: 100%;
   text-align: center;
+  /* Same reasoning as Experience: nothing here can scroll, so the header has
+     to be accounted for rather than centred through. */
+  padding: calc(var(--nav-height) + 16px) 0 32px;
 
   &:before {
     content: '';
@@ -149,6 +153,7 @@ const StyledStage = styled.div`
     min-height: 0;
     text-align: left;
     align-items: stretch;
+    padding: 0;
 
     &:before {
       display: none;
@@ -258,7 +263,11 @@ const StyledLabel = styled.button`
   font-family: var(--font-mono);
   font-size: var(--fz-xxs);
   text-align: left;
-  white-space: nowrap;
+  /* A long title on a rock near the right-hand edge used to run straight off
+     the screen. The belt flips the anchor for those — see the label pass in
+     asteroids.js — and the cap here is the backstop for a title long enough to
+     overflow from either side. */
+  max-width: min(20rem, 32vw);
   cursor: pointer;
   pointer-events: auto;
   opacity: 0;
@@ -268,6 +277,12 @@ const StyledLabel = styled.button`
 
   &[data-focused='true'] {
     color: var(--green);
+  }
+
+  /* Anchored by its right edge, so the text runs back toward the middle of
+     the frame instead of off the side of it. */
+  &[data-side='right'] {
+    text-align: right;
   }
 
   &:hover,

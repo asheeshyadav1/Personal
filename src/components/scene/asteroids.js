@@ -252,8 +252,13 @@ export const createAsteroidBelt = (THREE, palette, slots) => {
         // the distant ones competing with the one being read.
         const distance = CAMERA.z - world.z;
         const near = Math.max(0, 1 - Math.abs(distance) / (BELT.spacing * 3.4));
-        rock.mesh.visible = distance > 0.4 && near > 0.02;
-        rock.material.uniforms.uOpacity.value = (0.3 + near * 0.7) * beltOpacity;
+        rock.material.uniforms.uDim.value = 0.3 + near * 0.7;
+        // Presence is separate from distance, and it drives alpha. A rock on
+        // its way out has to stop being drawn, not darken to black in place —
+        // it is an opaque body, so a black one is a black ball hanging over
+        // Contact rather than an absence.
+        const fade = rock.setFade(beltOpacity);
+        rock.mesh.visible = distance > 0.4 && near > 0.02 && fade > 0.004;
       }
 
       if (geometryOnly) {
@@ -280,9 +285,18 @@ export const createAsteroidBelt = (THREE, palette, slots) => {
         // a hint that there is more belt to come.
         const near = Math.max(0, 1 - distance / (BELT.spacing * 3.4));
         const scale = 0.62 + near * 0.55;
+        // Which edge of the label is pinned to its rock. Stations alternate
+        // sides of the corridor, so a rock on the right half of the frame had
+        // its title running outward — off the screen entirely for the longer
+        // ones, at any window width. Anchoring those by the right edge instead
+        // sends the text back toward the middle, where there is room for it.
+        const onRight = screen.x > document.documentElement.clientWidth * 0.5;
+        el.dataset.side = onRight ? 'right' : 'left';
+        // translateX is applied before the scale, in the element's own space,
+        // so the scaled box still ends flush with the rock.
         el.style.transform = `translate3d(${screen.x.toFixed(1)}px, ${screen.y.toFixed(
           1,
-        )}px, 0) scale(${scale.toFixed(3)})`;
+        )}px, 0) scale(${scale.toFixed(3)})${onRight ? ' translateX(-100%)' : ''}`;
         el.style.opacity = (0.18 + near * 0.5 + brightness[i] * 0.5).toFixed(3);
         el.dataset.focused = i === focus ? 'true' : 'false';
       }

@@ -9,6 +9,7 @@ import {
   projectToScreen,
 } from '@components/scene/portalMetrics';
 import Reveal from '@components/reveal';
+import { getViewport, onLayoutChange } from '@utils/viewport';
 import { usePrefersReducedMotion } from '@hooks';
 
 // useLayoutEffect warns during SSR; there is no viewport to read on the server.
@@ -30,12 +31,25 @@ const EDGE_MARGIN = 24;
 
 const introRightEdge = width => width * INTRO.left + Math.min(INTRO.maxWidth, width * INTRO.width);
 
+/**
+ * Full-bleed, escaping the padding `main` puts on every section.
+ *
+ * `100vw` on its own is wrong wherever the browser draws a classic scrollbar —
+ * Windows, and so most of Edge — because there `100vw` counts the scrollbar
+ * gutter and the stage lands a dozen pixels wider than the page, dragging
+ * everything anchored to it half a scrollbar off centre. --scrollbar-width is
+ * measured and published by the shared viewport helper, and is 0 wherever
+ * scrollbars are overlaid.
+ */
 const StyledStage = styled.div`
+  --bleed: calc(100vw - var(--scrollbar-width, 0px));
+
   position: sticky;
   top: 0;
+  height: 100vh; /* Fallback for Edge before 108. */
   height: 100dvh;
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
+  width: var(--bleed);
+  margin-left: calc(50% - var(--bleed) / 2);
   pointer-events: none;
 
   a,
@@ -206,6 +220,20 @@ const StyledStack = styled.div`
  * over the intro column or off the edge of the screen. The dot never moves —
  * it is the thing anchoring the fact to its arm — only the text it carries.
  */
+/**
+ * Keeps a projected point inside the frame.
+ *
+ * The arms are laid out in world units, which scale with viewport *height*, so
+ * a tall or unusually proportioned window throws the outer nodes past the edge
+ * of a screen the maths never consulted. Clamping moves a label a little off
+ * its arm, which is much the lesser problem: a fact half off the right edge is
+ * simply not readable.
+ */
+const clampToFrame = ({ x, y }, { width, height }) => ({
+  x: Math.min(Math.max(x, LABEL_MAX_WIDTH * 0.25 + EDGE_MARGIN), width - EDGE_MARGIN),
+  y: Math.min(Math.max(y, EDGE_MARGIN + 48), height - EDGE_MARGIN - 48),
+});
+
 const sideFor = (x, width, centreX) => {
   const preferred = x < centreX ? 'left' : 'right';
   if (preferred === 'left' && x - LABEL_MAX_WIDTH < introRightEdge(width)) {
@@ -225,10 +253,12 @@ const GalaxyField = ({ progress, core, intro, nodes, heading }) => {
   // arrangement this viewport gets. Measuring in an effect renders the stacked
   // fallback first and then swaps, which the reader sees as a jump.
   useIsomorphicLayoutEffect(() => {
-    const update = () => setViewport({ width: window.innerWidth, height: window.innerHeight });
+    const update = () => setViewport(getViewport());
     update();
-    window.addEventListener('resize', update);
-    return () => window.removeEventListener('resize', update);
+    // Layout changes only. Re-placing every label against a phone's live
+    // `innerHeight` meant the whole arrangement jumped each time the URL bar
+    // moved, which on a narrow screen is every few hundred pixels of scroll.
+    return onLayoutChange(update);
   }, []);
 
   // Ordered by distance out, which is the order the build front reaches them.
@@ -241,7 +271,7 @@ const GalaxyField = ({ progress, core, intro, nodes, heading }) => {
     return (
       <StyledStack>
         {heading}
-        <div className="stack-core">{core}</div>
+        {core && <div className="stack-core">{core}</div>}
         <div className="stack-core">{intro}</div>
         {ordered.map(n => (
           <Reveal key={n.label} active depth={0.7} pinned>
@@ -259,7 +289,7 @@ const GalaxyField = ({ progress, core, intro, nodes, heading }) => {
 
   const placed = ordered.map(n => {
     const spine = galaxyArmPoint(n.arm, n.t);
-    const screen = projectToScreen(galaxyToWorld(spine));
+    const screen = clampToFrame(projectToScreen(galaxyToWorld(spine)), viewport);
     return {
       ...n,
       screen,
@@ -278,7 +308,7 @@ const GalaxyField = ({ progress, core, intro, nodes, heading }) => {
 
       {intro && <StyledIntro>{intro}</StyledIntro>}
 
-      <StyledCore style={{ left: centre.x, top: centre.y }}>{core}</StyledCore>
+      {core && <StyledCore style={{ left: centre.x, top: centre.y }}>{core}</StyledCore>}
 
       {placed.map(n => (
         <StyledNode
@@ -297,7 +327,7 @@ const GalaxyField = ({ progress, core, intro, nodes, heading }) => {
 
 GalaxyField.propTypes = {
   progress: PropTypes.number.isRequired,
-  core: PropTypes.node.isRequired,
+  core: PropTypes.node,
   intro: PropTypes.node,
   heading: PropTypes.node,
   nodes: PropTypes.arrayOf(
@@ -310,6 +340,6 @@ GalaxyField.propTypes = {
   ).isRequired,
 };
 
-GalaxyField.defaultProps = { heading: null, intro: null };
+GalaxyField.defaultProps = { heading: null, intro: null, core: null };
 
 export default GalaxyField;

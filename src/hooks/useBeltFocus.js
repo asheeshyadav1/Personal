@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { setBeltFocus, setBeltActive } from '@components/scene/beltStore';
+import { getViewport, onLayoutChange } from '@utils/viewport';
 import usePrefersReducedMotion from './usePrefersReducedMotion';
 
 /**
@@ -19,9 +20,11 @@ import usePrefersReducedMotion from './usePrefersReducedMotion';
  * index they are travelling along.
  *
  * @param {number} count how many projects.
+ * @param {number} breakpoint narrowest viewport that still gets the belt.
+ * @param {number} minHeight shortest viewport that still gets the belt.
  * @returns {{sectionRef, index: number, panning: boolean}}
  */
-const useBeltFocus = (count, breakpoint = 1080) => {
+const useBeltFocus = (count, breakpoint = 1080, minHeight = 620) => {
   const sectionRef = useRef(null);
   const prefersReducedMotion = usePrefersReducedMotion();
   const [index, setIndex] = useState(0);
@@ -44,8 +47,17 @@ const useBeltFocus = (count, breakpoint = 1080) => {
     let frameId = null;
     let active = false;
 
+    // Measured through the shared viewport rather than `innerWidth`, so the
+    // pinned height is set from a stable number. Re-deriving it from a phone's
+    // live `innerHeight` would rewrite the section's height — and so every
+    // scroll offset below it — on every URL-bar movement.
     const measure = () => {
-      active = window.innerWidth >= breakpoint;
+      const { width, height } = getViewport();
+      // Height counts as well as width. The stage is pinned, so it cannot
+      // scroll, and on a short window — a laptop in a split screen, a phone in
+      // landscape — the panel simply runs off the bottom with no way to reach
+      // it. Below either threshold the work becomes a plain list instead.
+      active = width >= breakpoint && height >= minHeight;
       setPanning(active);
       if (!active) {
         section.style.height = '';
@@ -53,7 +65,7 @@ const useBeltFocus = (count, breakpoint = 1080) => {
       }
       // One viewport to read each project, plus one to hold the last while it
       // is still on screen.
-      section.style.height = `${window.innerHeight * (count + 1)}px`;
+      section.style.height = `${height * (count + 1)}px`;
     };
 
     const read = () => {
@@ -75,7 +87,7 @@ const useBeltFocus = (count, breakpoint = 1080) => {
       }
     };
 
-    const onResize = () => {
+    const onLayout = () => {
       measure();
       onScroll();
     };
@@ -83,17 +95,17 @@ const useBeltFocus = (count, breakpoint = 1080) => {
     measure();
     read();
     window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onResize);
+    const stopWatchingLayout = onLayoutChange(onLayout);
 
     return () => {
       if (frameId !== null) {
         cancelAnimationFrame(frameId);
       }
       window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onResize);
+      stopWatchingLayout();
       section.style.height = '';
     };
-  }, [count, breakpoint, prefersReducedMotion]);
+  }, [count, breakpoint, minHeight, prefersReducedMotion]);
 
   // The scene reads focus from the store rather than from props, so it never
   // has to wait on a React render to know which rock to light.

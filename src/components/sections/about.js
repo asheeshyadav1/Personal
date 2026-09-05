@@ -1,5 +1,4 @@
 import React from 'react';
-import { StaticImage } from 'gatsby-plugin-image';
 import styled from 'styled-components';
 import { useSectionActivation, useReveal, useFormationPresence } from '@hooks';
 import GalaxyField from '@components/galaxyField';
@@ -29,28 +28,6 @@ const StyledAboutSection = styled.section`
   }
 `;
 
-const StyledPortrait = styled.div`
-  position: relative;
-  width: 168px;
-  margin: 0 auto;
-
-  .img {
-    border-radius: var(--border-radius);
-    filter: grayscale(100%) contrast(1.05);
-    transition: var(--transition);
-  }
-
-  &:after {
-    content: '';
-    position: absolute;
-    inset: 12px -12px -12px 12px;
-    border: 1px solid var(--green);
-    border-radius: var(--border-radius);
-    opacity: 0.4;
-    z-index: -1;
-  }
-`;
-
 /**
  * The About material, placed on the galaxy's arms.
  *
@@ -59,25 +36,24 @@ const StyledPortrait = styled.div`
  * projected arm traces a narrow curve: eight facts on two arms crowd into one
  * band down the middle of the screen no matter how they are spaced along it.
  *
- * The pairs are chosen so every label clears the portrait at the centre, the
+ * The pairs are chosen so every label clears the bulge at the centre, the
  * heading, and each other once projected — an arm's outer reaches fall off the
  * bottom of the frame long before the point cloud itself does.
  */
 const ABOUT_NODES = [
   { label: 'C, C++, Java, Python', detail: 'core languages', arm: 0, t: 0.28 },
-  { label: 'SQL & database design', detail: 'schemas, modelling', arm: 2, t: 0.32 },
-  { label: 'Full-stack apps', detail: 'real-time messaging', arm: 0, t: 0.48 },
-  { label: 'Automation pipelines', detail: '100k+ records processed', arm: 3, t: 0.52 },
-  { label: 'ETL & data ingestion', detail: 'optimised at scale', arm: 2, t: 0.58 },
-  { label: 'Predictive models', detail: 'resource forecasting', arm: 1, t: 0.62 },
-  { label: 'AWS, Azure, GCP', detail: 'cloud platforms', arm: 3, t: 0.82 },
-  { label: 'Blockchain in C', detail: 'SHA-256, proof-of-work', arm: 1, t: 0.88 },
+  { label: 'SQL & schema design', detail: '13 facts, 19 dimensions', arm: 2, t: 0.32 },
+  { label: 'Spring Boot & REST', detail: 'auth, RBAC, 90% coverage', arm: 0, t: 0.48 },
+  { label: 'Automated ingestion', detail: '50,000+ records a day', arm: 3, t: 0.52 },
+  { label: 'ETL & warehousing', detail: 'PostgreSQL, tuned', arm: 2, t: 0.58 },
+  { label: 'PyTorch & scikit-learn', detail: 'sequence models, ranking', arm: 1, t: 0.62 },
+  { label: 'AWS, Azure, GCP', detail: 'cloud & Kubernetes', arm: 3, t: 0.82 },
+  { label: 'RAG with pgvector', detail: '71% → 93% answer quality', arm: 1, t: 0.88 },
 ];
 
 const About = () => {
   const { ref: sectionRef, step } = useSectionActivation('about', 8);
   const headingRef = useReveal(step >= 1, 1.4, true);
-  const portraitRef = useReveal(step >= 1, 0, true);
   const introRef = useReveal(step >= 1, 0, true);
 
   // One number drives both the point cloud's build front and the order the
@@ -89,42 +65,32 @@ const About = () => {
   const intro = (
     <div ref={introRef}>
       <p>
-        I’m <strong>Asheesh</strong>, a Computer Science student at Simon Fraser University in
-        Vancouver. I build systems that turn data into something you can act on.
+        I’m <strong>Asheesh</strong>, a computer science student at Simon Fraser University in
+        Vancouver, BC. I build systems that turn data into something you can act on.
       </p>
       <p>
-        Across research and four internships I’ve optimised ETL workflows, automated ingestion at
-        the scale of tens of thousands of records a day, and built predictive models for forecasting
-        resource use. I’m drawn to statistical learning and AI: finding the signal, making things
-        faster, supporting better decisions.
+        Across co-op terms at Accenture and GeoBC and a research assistantship at SFU Beedie, I’ve
+        architected ingestion that processes 50,000+ records a day, cut a 24-hour geospatial run to
+        three hours, and lifted a RAG pipeline’s answer quality from 71% to 93%. I’m drawn to
+        statistical learning and AI: finding the signal, making things faster, supporting better
+        decisions.
       </p>
       <p>
-        Outside of that I’ve shipped full-stack apps with real-time messaging and written a small
-        blockchain in C, mostly to understand tamper-resistant data structures from the inside.
+        Outside of that I’ve built Sync, a social platform with token-based auth and multi-factor
+        verification at 90% test coverage, and an NFL projection model in PyTorch served as a
+        Kubernetes inference service.
       </p>
-    </div>
-  );
-
-  const core = (
-    <div ref={portraitRef}>
-      <StyledPortrait>
-        <StaticImage
-          className="img"
-          src="../../images/meAY.jpeg"
-          width={440}
-          quality={95}
-          formats={['AUTO', 'WEBP', 'AVIF']}
-          alt="Asheesh Yadav"
-        />
-      </StyledPortrait>
     </div>
   );
 
   return (
     <StyledAboutSection id="about" ref={sectionRef}>
+      {/* No `core`: the bulge is left as the bulge. A portrait sitting in the
+          middle of the disc was the one opaque object in a section made of
+          light, and it read as a photo pasted over the galaxy rather than
+          anything belonging to it. */}
       <GalaxyField
         progress={progress}
-        core={core}
         intro={intro}
         nodes={ABOUT_NODES}
         heading={

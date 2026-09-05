@@ -25,6 +25,10 @@ const useReveal = (active, depth = 0.8, pinned = false) => {
   const ref = useRef(null);
   const prefersReducedMotion = usePrefersReducedMotion();
   const handleRef = useRef(null);
+  // Read by the registration below, which has to know the current state
+  // without taking `active` as a dependency and re-registering on every beat.
+  const activeRef = useRef(active);
+  activeRef.current = active;
 
   useIsomorphicLayoutEffect(() => {
     const el = ref.current;
@@ -33,6 +37,14 @@ const useReveal = (active, depth = 0.8, pinned = false) => {
     }
 
     handleRef.current = registerMotion(el, depth, pinned);
+    // A fresh registration starts hidden, so whatever the element's state
+    // already is has to be re-applied here. The effect below only fires when
+    // `active` *changes*, and this effect runs again whenever the motion
+    // preference resolves — which happens one tick after the first render, and
+    // for content that is active from the outset (the hero's name and tagline)
+    // there is no later change to put it back on screen.
+    handleRef.current.setActive(!!activeRef.current);
+
     return () => {
       handleRef.current.release();
       handleRef.current = null;

@@ -33,12 +33,12 @@ const NotFoundPage = ({ location }) => {
 
   useEffect(() => {
     if (prefersReducedMotion) {
-      return;
+      return undefined;
     }
 
     const timeout = setTimeout(() => setIsMounted(true), navDelay);
     return () => clearTimeout(timeout);
-  }, []);
+  }, [prefersReducedMotion]);
 
   const content = (
     <StyledMainContainer className="fillHeight">

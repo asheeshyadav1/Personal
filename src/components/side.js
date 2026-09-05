@@ -28,13 +28,15 @@ const Side = ({ children, isHome, orientation }) => {
   const [isMounted, setIsMounted] = useState(!isHome);
   const prefersReducedMotion = usePrefersReducedMotion();
 
+  // See the note in nav.js: the motion preference lands one effect after the
+  // first render, so this has to re-run when it does or the rail never mounts.
   useEffect(() => {
     if (!isHome || prefersReducedMotion) {
-      return;
+      return undefined;
     }
     const timeout = setTimeout(() => setIsMounted(true), loaderDelay);
     return () => clearTimeout(timeout);
-  }, []);
+  }, [isHome, prefersReducedMotion]);
 
   return (
     <StyledSideElement orientation={orientation}>

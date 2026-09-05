@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { setFormationProgress, setFormationDispersing } from '@components/scene/sceneStore';
-import usePrefersReducedMotion from './usePrefersReducedMotion';
+import { useMotionPreference } from './usePrefersReducedMotion';
 
 /**
  * Drives a formation's assembly from where its sticky stage sits in its own
@@ -37,9 +37,20 @@ const useFormationPresence = (
   { enter = 2000, exit = 900, from = -0.15, until = 0.68, buckets = 24 } = {},
 ) => {
   const [progress, setProgress] = useState(0);
-  const prefersReducedMotion = usePrefersReducedMotion();
+  const { prefersReducedMotion, resolved } = useMotionPreference();
 
   useEffect(() => {
+    // This writes to the scene's shared state, so it must not act on the
+    // motion preference before that preference has actually been read. The
+    // reduced-motion branch below parks the formation at fully-assembled, and
+    // running it on the pre-resolution assumption left the galaxy holding the
+    // frame from the very first paint: the hero's ring saw a formation already
+    // in possession of the scene and correctly stood down, so the page opened
+    // on About's galaxy instead of the portal.
+    if (!resolved) {
+      return undefined;
+    }
+
     if (prefersReducedMotion) {
       setProgress(1);
       setFormationProgress(1);
@@ -55,6 +66,11 @@ const useFormationPresence = (
     let last = null;
     let raw = 0;
     let target = 0;
+
+    // The store is shared, and this hook is now the thing that owns it. State
+    // it up from scratch rather than inheriting whatever was last written.
+    setFormationProgress(0);
+    setFormationDispersing(0);
 
     /** Where the stage sits in its pinned range: 0 as it pins, 1 as it lets go. */
     const stagePosition = () => {
@@ -128,7 +144,7 @@ const useFormationPresence = (
         cancelAnimationFrame(frameId);
       }
     };
-  }, [ref, enter, exit, from, until, buckets, prefersReducedMotion]);
+  }, [ref, enter, exit, from, until, buckets, prefersReducedMotion, resolved]);
 
   return progress;
 };

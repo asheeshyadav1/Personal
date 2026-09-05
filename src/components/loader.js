@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import { usePrefersReducedMotion } from '@hooks';
+import { useMotionPreference } from '@hooks';
 import { IconLoader } from '@components/icons';
 
 const StyledLoader = styled.div`
@@ -75,11 +75,58 @@ const CELL_W = 11;
 const CELL_H = 14;
 
 // The AY mark, in the 84x96 viewBox of IconLogo with its translate(3,3) baked in.
-const LOGO_VIEWBOX = { w: 84, h: 96 };
-const HEX_PATH = 'M42 3 L3 25 L3 70 L42 93 L81 71 L81 26 Z';
 const A_PATHS = ['M20 64 L29 33.3', 'M29 33.3 L38 64', 'M25 49.5 L33 49.5'];
 const Y_PATH =
   'M44 33.3 L48.5 33.3 L53 45 L57.5 33.3 L62 33.3 L55.5 50 L55.5 64 L50.5 64 L50.5 50 Z';
+
+/**
+ * The letters, and nothing around them.
+ *
+ * There used to be an outlined hexagon here, a leftover from the theme this
+ * site wore before the space one. Enclosing the initials in any badge shape
+ * costs them most of the frame — the mark has to shrink to fit inside its own
+ * container — and the container was the part carrying no meaning. Dropped, the
+ * same screen belongs entirely to the AY, which is the thing worth reading.
+ *
+ * The bounding box of the two letters, in the 84x96 viewBox the paths below
+ * are drawn in. Scaling is done against this rather than the viewBox, so the
+ * letters fill the frame instead of floating in the empty margin the hexagon
+ * used to occupy.
+ */
+const LETTERS = { x: 20, y: 33.3, w: 42, h: 30.7 };
+
+/** Letter height as a fraction of the viewport's smaller side. */
+const LETTER_SCALE = 0.42;
+
+/** Palette, read from the page so the loader tracks the theme rather than copying it. */
+const readPalette = () => {
+  // ground is the loader's own background, so the trails fade to the panel
+  // they are painted on rather than to a slightly different black.
+  const fallback = { mark: '#cfe3ff', head: '#eef4fb', tail: '#8492a3', ground: '#04070c' };
+  if (typeof window === 'undefined') {
+    return fallback;
+  }
+  const style = getComputedStyle(document.documentElement);
+  const read = (name, value) => style.getPropertyValue(name).trim() || value;
+  return {
+    mark: read('--green', fallback.mark),
+    head: read('--white', fallback.head),
+    tail: read('--slate', fallback.tail),
+    ground: read('--dark-navy', fallback.ground),
+  };
+};
+
+/** Turns `#rrggbb` into `r, g, b` so an alpha can be varied per cell. */
+const toRgbTriplet = hex => {
+  const parsed = /^#?([\da-f]{2})([\da-f]{2})([\da-f]{2})$/i.exec(hex.trim());
+  if (!parsed) {
+    return '255, 255, 255';
+  }
+  return parsed
+    .slice(1)
+    .map(part => parseInt(part, 16))
+    .join(', ');
+};
 
 /**
  * Rasterises the logo and reports, for each cell of the character grid, whether
@@ -94,10 +141,12 @@ const buildLogoMask = (width, height, cols, rows) => {
     return null;
   }
 
-  const scale = (Math.min(width, height) * 0.55) / LOGO_VIEWBOX.h;
+  const scale = (Math.min(width, height) * LETTER_SCALE) / LETTERS.h;
+  // Centres the letters' own box, not the viewBox's — they sit low and left
+  // inside it, so centring the viewBox would hang the mark off centre.
   ctx.translate(
-    width / 2 - (LOGO_VIEWBOX.w * scale) / 2,
-    height / 2 - (LOGO_VIEWBOX.h * scale) / 2,
+    width / 2 - (LETTERS.x + LETTERS.w / 2) * scale,
+    height / 2 - (LETTERS.y + LETTERS.h / 2) * scale,
   );
   ctx.scale(scale, scale);
 
@@ -106,15 +155,15 @@ const buildLogoMask = (width, height, cols, rows) => {
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
 
-  ctx.lineWidth = 6.5;
-  ctx.stroke(new Path2D(HEX_PATH));
-
-  ctx.lineWidth = 5.5;
+  // Heavier than the old mark. With nothing drawn around them the letters are
+  // the whole image, and at this size a hairline A reads as thin rather than
+  // as fine.
+  ctx.lineWidth = 6.4;
   A_PATHS.forEach(d => ctx.stroke(new Path2D(d)));
 
   const y = new Path2D(Y_PATH);
   ctx.fill(y);
-  ctx.lineWidth = 2.5;
+  ctx.lineWidth = 3.4;
   ctx.stroke(y); // fatten the Y to match the weight of the stroked A
 
   const { data } = ctx.getImageData(0, 0, width, height);
@@ -144,7 +193,7 @@ const buildLogoMask = (width, height, cols, rows) => {
 const Loader = ({ finishLoading }) => {
   const canvasRef = useRef(null);
   const wrapperRef = useRef(null);
-  const prefersReducedMotion = usePrefersReducedMotion();
+  const { prefersReducedMotion, resolved } = useMotionPreference();
   const [supportsCanvas, setSupportsCanvas] = useState(true);
 
   // The parent passes a fresh arrow function on every render. Holding it in a
@@ -155,6 +204,13 @@ const Loader = ({ finishLoading }) => {
   finishRef.current = finishLoading;
 
   useEffect(() => {
+    // Nothing is decided until the motion preference has actually been read.
+    // Acting on the pre-resolution assumption would call finishLoading on the
+    // first render, unmount this component, and retire the intro for everyone.
+    if (!resolved) {
+      return undefined;
+    }
+
     if (prefersReducedMotion || alreadySeen()) {
       const timeout = setTimeout(() => finishRef.current(), 0);
       return () => clearTimeout(timeout);
@@ -179,6 +235,12 @@ const Loader = ({ finishLoading }) => {
 
     const cols = Math.ceil(width / CELL_W);
     const rows = Math.ceil(height / CELL_H);
+
+    const palette = readPalette();
+    const markRgb = toRgbTriplet(palette.mark);
+    const headRgb = toRgbTriplet(palette.head);
+    const tailRgb = toRgbTriplet(palette.tail);
+    const groundRgb = toRgbTriplet(palette.ground);
 
     const mask = buildLogoMask(width, height, cols, rows) || [];
     // Column heads, staggered so the rain doesn't start as a flat line.
@@ -209,7 +271,7 @@ const Loader = ({ finishLoading }) => {
       const elapsed = now - start;
 
       // Trails: paint the background at partial alpha instead of clearing.
-      ctx.fillStyle = 'rgba(5, 5, 5, 0.28)';
+      ctx.fillStyle = `rgba(${groundRgb}, 0.28)`;
       ctx.fillRect(0, 0, width, height);
       ctx.font = `500 ${CELL_H - 3}px "SF Mono", "Fira Code", monospace`;
       ctx.textBaseline = 'top';
@@ -235,8 +297,11 @@ const Loader = ({ finishLoading }) => {
             }
             const char = GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
             const fade = (1 - k / 9) * rainAlpha;
+            // The head is the near-white the page's brightest text uses; the
+            // tail falls back to slate, so the rain is the same cool range as
+            // the starfield it hands over to.
             ctx.fillStyle =
-              k === 0 ? `rgba(255,255,255,${fade})` : `rgba(200,200,200,${fade * 0.5})`;
+              k === 0 ? `rgba(${headRgb}, ${fade})` : `rgba(${tailRgb}, ${fade * 0.55})`;
             ctx.fillText(char, col * CELL_W, row * CELL_H);
           }
         }
@@ -249,9 +314,11 @@ const Loader = ({ finishLoading }) => {
           const cell = mask[i];
           // Cells flicker briefly as they land, then hold steady.
           const settled = i < locked - 40;
+          // The mark itself lands in the accent, which is the colour the
+          // portal is lit with on the page underneath.
           ctx.fillStyle = settled
-            ? 'rgba(255,255,255,0.95)'
-            : `rgba(255,255,255,${0.4 + Math.random() * 0.6})`;
+            ? `rgb(${markRgb})`
+            : `rgba(${markRgb}, ${0.45 + Math.random() * 0.55})`;
           const char = settled ? cell.char : GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
           ctx.fillText(char, cell.col * CELL_W, cell.row * CELL_H);
         }
@@ -270,7 +337,7 @@ const Loader = ({ finishLoading }) => {
       cancelAnimationFrame(frameId);
       clearTimeout(fallback);
     };
-  }, [prefersReducedMotion]);
+  }, [prefersReducedMotion, resolved]);
 
   return (
     <StyledLoader ref={wrapperRef} className="loader">

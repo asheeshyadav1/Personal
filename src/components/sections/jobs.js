@@ -7,6 +7,15 @@ import { setFormationVariant } from '@components/scene/sceneStore';
 /** Beats of scroll spent on each role before the next one takes the panel. */
 const STEPS_PER_JOB = 5;
 
+/**
+ * The pinned treatment needs two things: width to put the rail beside the
+ * scene, and height to show a whole role at once. Missing either, the section
+ * falls back to ordinary flow — a pinned stage cannot scroll, so anything
+ * taller than the viewport is simply unreachable, and a 500px-tall window
+ * (a laptop in a split screen, a phone on its side) is exactly that case.
+ */
+const UNPINNED = '(max-width: 1080px), (max-height: 700px)';
+
 const StyledJobsSection = styled.section`
   position: relative;
   z-index: 1;
@@ -14,7 +23,7 @@ const StyledJobsSection = styled.section`
   /* Enough scroll for each role to hold the panel, plus a lead-in. */
   min-height: 300vh;
 
-  @media (max-width: 1080px) {
+  @media ${UNPINNED} {
     max-width: 700px;
     margin: 0 auto;
     padding: 100px 0;
@@ -30,17 +39,23 @@ const StyledJobsSection = styled.section`
 const StyledStage = styled.div`
   position: sticky;
   top: 0;
+  min-height: 100vh; /* Fallback for Edge before 108. */
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
   justify-content: center;
   /* Leaves the right of the screen to the scene's ring. */
   width: min(52rem, 54vw);
+  /* Room for the fixed header, which centring alone would put the heading
+     underneath on a shorter window. Below UNPINNED there is no pinning and no
+     centring to correct for, so it goes away again. */
+  padding: calc(var(--nav-height) + 16px) 0 32px;
 
-  @media (max-width: 1080px) {
+  @media ${UNPINNED} {
     position: static;
     min-height: 0;
     width: 100%;
+    padding: 0;
   }
 `;
 
@@ -56,6 +71,10 @@ const StyledTrack = styled.ol`
   gap: 0;
   list-style: none;
   margin: 34px 0 46px;
+
+  @media (max-height: 760px) {
+    margin: 22px 0 26px;
+  }
   padding: 0;
 
   /* The run itself, behind the stations. */
@@ -202,6 +221,10 @@ const StyledMetrics = styled.dl`
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1px;
   margin: 28px 0;
+
+  @media (max-height: 760px) {
+    margin: 18px 0;
+  }
   padding: 0;
   background-color: var(--lightest-navy);
   border: 1px solid var(--lightest-navy);
@@ -225,7 +248,12 @@ const StyledMetrics = styled.dl`
     margin: 7px 0 0;
   }
 
-  @media (max-width: 600px) {
+  /* Three columns of "71→93%" plus a caption do not fit across a phone; two
+     is still a comparison, one is a list. */
+  @media (max-width: 700px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  @media (max-width: 460px) {
     grid-template-columns: 1fr;
   }
 `;

@@ -17,14 +17,16 @@ import {
   NARROW_BREAKPOINT,
   FORMATIONS,
   formationFor,
-  GALAXY,
   FIGURE,
+  clampWorldX,
+  galaxyOffsetX,
 } from './portalMetrics';
 import { createGalaxy } from './galaxy';
 import { createStarFigure } from './starFigure';
 import { createAsteroidBelt } from './asteroids';
 import { getBeltCount, getBeltActive } from './beltStore';
 import { getActivePalette, applyPaletteVariables } from './palettes';
+import { getViewport, onViewportChange } from '@utils/viewport';
 
 /**
  * One fixed layer holding the scene and its scrim. They share a stacking
@@ -36,6 +38,7 @@ const StyledSceneLayer = styled.div`
   top: 0;
   left: 0;
   width: 100%;
+  height: 100vh; /* Fallback for Edge before 108, which has no dvh. */
   height: 100dvh;
   z-index: -1;
   pointer-events: none;
@@ -51,8 +54,32 @@ const StyledCanvasHost = styled.div`
     opacity: 1;
   }
 
+  /**
+   * Below the breakpoint every section collapses from a composition into a
+   * single column of prose, and that column sits directly over the formation
+   * instead of beside it. At full strength the arms of the galaxy ran straight
+   * through the About copy and the Contact heading was barely legible. The
+   * scene is still there — it is the page's whole character — but on a phone
+   * it is behind the text rather than next to it, and it is lit accordingly.
+   */
+  @media (max-width: 1080px) {
+    &.is-ready {
+      opacity: 0.42;
+    }
+  }
+
+  @media (max-width: 768px) {
+    &.is-ready {
+      opacity: 0.3;
+    }
+  }
+
   canvas {
     display: block;
+    /* The drawing buffer is sized in JS; the element always fills the layer,
+       so a stale buffer scales rather than leaving a gap at the edge. */
+    width: 100% !important;
+    height: 100% !important;
   }
 `;
 
@@ -332,7 +359,8 @@ const SceneCanvas = () => {
         GALAXY_POINTS,
         palette,
       );
-      galaxy.position.x = GALAXY.offsetX;
+      // Seated by placeFormations() below, which applies the aspect-ratio
+      // clamp; GALAXY.offsetX is the unclamped intent.
       scene.add(galaxy);
 
       // --- the asteroid belt: Work's formation ---------------------------
@@ -358,19 +386,47 @@ const SceneCanvas = () => {
         belt.material,
       ];
 
+      /**
+       * Sized from the layer that holds it rather than from `window`.
+       *
+       * The layer is `100dvh`, which is what the reader actually sees; on a
+       * phone `innerHeight` disagrees with that by the height of the URL bar
+       * and changes constantly as it slides. Reading the host means the buffer
+       * matches the box it is painted into, at any resolution, and a device
+       * pixel ratio above 2 is not worth four times the fill rate for a field
+       * of soft points.
+       */
       const resize = () => {
-        const { innerWidth: w, innerHeight: h } = window;
+        const w = Math.max(1, host.clientWidth);
+        const h = Math.max(1, host.clientHeight);
         camera.aspect = w / h;
         camera.updateProjectionMatrix();
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        renderer.setSize(w, h);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        renderer.setSize(w, h, false);
         // Half the drawing buffer height, which is the scale the glow shader
         // attenuates point size against.
         const scale = renderer.domElement.height * 0.5;
         glowMaterials.forEach(m => {
           m.uniforms.uScale.value = scale;
         });
+        placeFormations();
       };
+
+      /**
+       * Re-seats the formations that carry a fixed horizontal offset.
+       *
+       * Those offsets are world units, and world units scale with viewport
+       * height, so a window whose proportions the layout never anticipated —
+       * a portrait monitor, a half-width window, a tall tablet — can push a
+       * formation clean off the side of the screen. The clamp is a no-op at
+       * every ordinary landscape size.
+       */
+      function placeFormations() {
+        const { width, height } = getViewport();
+        figure.group.position.x = clampWorldX(FIGURE.x, width, height);
+        galaxy.position.x = galaxyOffsetX(width, height);
+      }
+
       resize();
 
       if (prefersReducedMotion) {
@@ -396,8 +452,9 @@ const SceneCanvas = () => {
       const pointer = { x: 0, y: 0 };
       const pointerTarget = { x: 0, y: 0 };
       const onPointerMove = e => {
-        pointerTarget.x = (e.clientX / window.innerWidth) * 2 - 1;
-        pointerTarget.y = (e.clientY / window.innerHeight) * 2 - 1;
+        const { width, height } = getViewport();
+        pointerTarget.x = (e.clientX / width) * 2 - 1;
+        pointerTarget.y = (e.clientY / height) * 2 - 1;
       };
 
       let visible = !document.hidden;
@@ -406,12 +463,25 @@ const SceneCanvas = () => {
       };
 
       window.addEventListener('pointermove', onPointerMove, { passive: true });
-      window.addEventListener('resize', resize);
       document.addEventListener('visibilitychange', onVisibility);
+      // Every viewport change, coalesced to one call a frame: the buffer has
+      // to track its box exactly, and reallocating it is cheap next to
+      // rendering into the wrong size.
+      const stopWatchingViewport = onViewportChange(resize);
+      // The host is also observed directly, because `100dvh` moves for reasons
+      // no window event reports.
+      let hostObserver = null;
+      if (typeof ResizeObserver !== 'undefined') {
+        hostObserver = new ResizeObserver(resize);
+        hostObserver.observe(host);
+      }
       cleanups.push(() => {
         window.removeEventListener('pointermove', onPointerMove);
-        window.removeEventListener('resize', resize);
         document.removeEventListener('visibilitychange', onVisibility);
+        stopWatchingViewport();
+        if (hostObserver) {
+          hostObserver.disconnect();
+        }
       });
 
       const clock = new THREE.Clock();
@@ -446,13 +516,14 @@ const SceneCanvas = () => {
         const t = clock.getElapsedTime();
         const { active: key, sectionProgress } = getSceneState();
         const layout = LAYOUT[key] || LAYOUT.hero;
-        const isNarrow = window.innerWidth < NARROW_BREAKPOINT;
+        const { width: viewWidth, height: viewHeight } = getViewport();
+        const isNarrow = viewWidth < NARROW_BREAKPOINT;
 
         pointer.x += (pointerTarget.x - pointer.x) * SETTINGS.lerp;
         pointer.y += (pointerTarget.y - pointer.y) * SETTINGS.lerp;
 
         // --- portal placement, eased so section changes glide -----------
-        const goalX = isNarrow ? 0 : layout.x;
+        const goalX = isNarrow ? 0 : clampWorldX(layout.x, viewWidth, viewHeight);
         const goalScale = layout.radius * (isNarrow ? 0.8 : 1);
         portal.position.x += (goalX - portal.position.x) * SETTINGS.ease;
         portal.position.y += ((0.5 - sectionProgress) * 0.6 - portal.position.y) * SETTINGS.ease;

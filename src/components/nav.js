@@ -45,6 +45,7 @@ const StyledHeader = styled.header`
       rgba(15, 15, 15, 0.32) 68%,
       rgba(15, 15, 15, 0) 100%
     );
+    -webkit-backdrop-filter: blur(9px);
     backdrop-filter: blur(9px);
     /* Feathers the blur on the same curve as the tint, so the frosted area has
        no edge of its own. */
@@ -180,21 +181,26 @@ const Nav = ({ isHome }) => {
     setScrolledToTop(window.pageYOffset < 50);
   };
 
+  // Keyed on prefersReducedMotion, not []. The preference is not known on the
+  // first render — it arrives an effect later, see usePrefersReducedMotion —
+  // so an effect that reads it and never runs again reads only the assumption.
+  // Here that left isMounted false for good once the real value came in, and
+  // the nav rendered with no logo, no links and no menu button.
   useEffect(() => {
     if (prefersReducedMotion) {
-      return;
+      return undefined;
     }
 
     const timeout = setTimeout(() => {
       setIsMounted(true);
     }, 100);
 
-    window.addEventListener('scroll', handleScroll);
+    return () => clearTimeout(timeout);
+  }, [prefersReducedMotion]);
 
-    return () => {
-      clearTimeout(timeout);
-      window.removeEventListener('scroll', handleScroll);
-    };
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const timeout = isHome ? loaderDelay : 0;
@@ -247,10 +253,21 @@ const Nav = ({ isHome }) => {
           </>
         ) : (
           <>
+            {/*
+              Logo is handed to CSSTransition directly rather than wrapped in a
+              fragment. CSSTransition finds the node it is to put classes on
+              with findDOMNode, and a fragment has no node of its own — it
+              resolved to whichever element came next, so the transition wrote
+              the logo's own markup and class over the links container beside
+              it. The nav then rendered as two divs called "logo", the second
+              holding an unstyled, decimal-numbered <ol> stacked down the
+              right-hand edge of the page. Logo is already a real element, so
+              there was never anything for the fragment to do.
+            */}
             <TransitionGroup component={null}>
               {isMounted && (
                 <CSSTransition classNames={fadeClass} timeout={timeout}>
-                  <>{Logo}</>
+                  {Logo}
                 </CSSTransition>
               )}
             </TransitionGroup>

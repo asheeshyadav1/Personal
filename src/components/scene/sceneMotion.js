@@ -51,8 +51,18 @@ const loop = () => {
     if (entry.active && entry.progress < 1) {
       entry.progress = Math.min(1, entry.progress + 0.04);
     }
+    // Standing down has to unwind the progress, not just stop advancing it.
+    // Freezing it here is what left copy stranded at a quarter opacity: on a
+    // phone the meter driving `active` was being reset several times a second
+    // by the URL bar, and every reset caught an element part-way in and left
+    // it there. Unwinding means the worst a spurious reset can do is replay
+    // the entrance.
+    if (!entry.active && entry.progress > 0) {
+      entry.progress = Math.max(0, entry.progress - 0.08);
+    }
     if (!entry.active && entry.progress === 0) {
-      return; // not yet dealt out; leave it hidden
+      entry.el.style.opacity = '0';
+      return; // not yet dealt out, or fully wound back; leave it hidden
     }
 
     const p = entry.progress;

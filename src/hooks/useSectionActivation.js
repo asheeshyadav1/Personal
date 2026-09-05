@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { registerSection } from '@components/scene/sceneStore';
-import usePrefersReducedMotion from './usePrefersReducedMotion';
+import { onLayoutChange } from '@utils/viewport';
+import { useMotionPreference } from './usePrefersReducedMotion';
 
 /**
  * Registers a section with the WebGL scene and meters how far the reader has
@@ -19,14 +20,23 @@ import usePrefersReducedMotion from './usePrefersReducedMotion';
  */
 const useSectionActivation = (key, steps = 12) => {
   const ref = useRef(null);
-  const prefersReducedMotion = usePrefersReducedMotion();
+  const { prefersReducedMotion, resolved } = useMotionPreference();
   const [step, setStep] = useState(0);
   const highWaterMark = useRef(0);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) {
-      return;
+      return undefined;
+    }
+
+    // Wait for the real motion preference. The branch below deals every
+    // section out in full, and the meter that replaces it only ever counts
+    // up — so acting on the pre-resolution assumption and then correcting
+    // would leave every section permanently revealed, with nothing left for
+    // scrolling to do.
+    if (!resolved) {
+      return undefined;
     }
 
     const unregister = registerSection(key, el);
@@ -36,6 +46,8 @@ const useSectionActivation = (key, steps = 12) => {
       setStep(steps);
       return unregister;
     }
+
+    highWaterMark.current = 0;
 
     let frameId = null;
 
@@ -60,11 +72,16 @@ const useSectionActivation = (key, steps = 12) => {
       }
     };
 
-    // A resize relays the section out from scratch, so the mark measured
+    // A real resize relays the section out from scratch, so the mark measured
     // against the old layout no longer describes anything. Keeping it would
     // leave a rotated phone showing content revealed against a stage that has
     // moved out from under it, with no way to recover but a reload.
-    const onResize = () => {
+    //
+    // A *real* one, though — hence onLayoutChange rather than the raw resize
+    // event. A phone fires resize every time the URL bar slides away, and
+    // resetting the mark on those wiped the reveal several times a second and
+    // left every section's copy stranded part-way in.
+    const onLayout = () => {
       highWaterMark.current = 0;
       setStep(0);
       onScroll();
@@ -72,17 +89,17 @@ const useSectionActivation = (key, steps = 12) => {
 
     update();
     window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onResize);
+    const stopWatchingLayout = onLayoutChange(onLayout);
 
     return () => {
       if (frameId !== null) {
         cancelAnimationFrame(frameId);
       }
       window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onResize);
+      stopWatchingLayout();
       unregister();
     };
-  }, [key, steps, prefersReducedMotion]);
+  }, [key, steps, prefersReducedMotion, resolved]);
 
   return { ref, step, activated: step > 0 };
 };

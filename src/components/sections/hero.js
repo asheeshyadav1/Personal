@@ -17,9 +17,12 @@ const StyledHeroSection = styled.section`
   display: flex;
   flex-direction: column;
   justify-content: center;
+  min-height: 100vh; /* Fallback for Edge before 108. */
   min-height: 100dvh;
   max-width: none;
-  padding: 0;
+  /* Clears the fixed header on a short window, where centring alone would put
+     the name underneath it. */
+  padding: var(--nav-height) 0 0;
   /* The portal sits right of centre, so the copy takes the left and stops
      short of it rather than running underneath. The global section rule
      centres with margin auto, which would pull this back into the middle. */
@@ -33,6 +36,11 @@ const StyledHeroSection = styled.section`
     margin: 0 auto;
     min-height: auto;
     padding: 22vh 0 12vh;
+  }
+
+  /* On a phone in landscape 22vh of lead-in is most of the screen. */
+  @media (max-width: 1080px) and (max-height: 620px) {
+    padding: calc(var(--nav-height) + 24px) 0 48px;
   }
 
   .hero-name {
@@ -87,12 +95,12 @@ const Hero = () => {
       </h1>
 
       <p className="hero-tagline" ref={taglineRef}>
-        I build data systems that hold up in production.
+        Turning raw data into reliable systems
       </p>
 
       <p className="hero-subtext" ref={subtextRef}>
-        Computer science at Simon Fraser University. Four internships spent on ETL pipelines,
-        forecasting models, and full-stack apps.
+        Computer science at Simon Fraser University. Co-op and research terms spent on ETL
+        pipelines, retrieval systems, and geospatial automation.
       </p>
 
       <span ref={buttonRef}>

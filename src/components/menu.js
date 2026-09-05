@@ -96,6 +96,7 @@ const StyledSidebar = styled.aside`
     right: 0;
     padding: 50px 10px;
     width: min(75vw, 400px);
+    height: 100vh; /* Fallback for Edge before 108. */
     height: 100dvh;
     outline: 0;
     background-color: var(--light-navy);

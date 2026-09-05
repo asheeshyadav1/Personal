@@ -12,6 +12,21 @@ const GlobalStyle = createGlobalStyle`
     box-sizing: border-box;
     width: 100%;
     scroll-behavior: smooth;
+    /* Reserves the scrollbar gutter up front, so a page that grows past one
+       screen does not shift sideways underneath the reader. On Windows — most
+       Edge installs — that shift is a visible 12px jump; where scrollbars are
+       overlaid this costs nothing. */
+    scrollbar-gutter: stable;
+    /* Set from JS by the shared viewport helper, and read by the full-bleed
+       rules so they can subtract a classic scrollbar from 100vw. Declared here
+       so those rules have a sane value before any script runs. */
+    --scrollbar-width: 0px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
   }
 
   *,
@@ -72,6 +87,9 @@ const GlobalStyle = createGlobalStyle`
     width: 100%;
     min-height: 100%;
     overflow-x: hidden;
+    /* A long unbroken token — a URL, a stack name — must wrap rather than push
+       the page wider than the phone showing it. */
+    overflow-wrap: break-word;
     -moz-osx-font-smoothing: grayscale;
     -webkit-font-smoothing: antialiased;
     background-color: var(--navy);
@@ -105,6 +123,7 @@ const GlobalStyle = createGlobalStyle`
   }
 
   #root {
+    min-height: 100vh; /* Fallback for Edge before 108. */
     min-height: 100dvh;
     display: grid;
     grid-template-rows: 1fr auto;
@@ -115,6 +134,7 @@ const GlobalStyle = createGlobalStyle`
     margin: 0 auto;
     width: 100%;
     max-width: 1600px;
+    min-height: 100vh; /* Fallback for Edge before 108. */
     min-height: 100dvh;
     padding: 200px 150px;
 
@@ -126,6 +146,12 @@ const GlobalStyle = createGlobalStyle`
     }
     @media (max-width: 480px) {
       padding: 125px 25px;
+    }
+    /* Below this the page is narrower than a phone in portrait, which is
+       usually a desktop window dragged very small. 16px keeps the copy off
+       both edges without leaving it nothing to sit in. */
+    @media (max-width: 380px) {
+      padding: 110px 16px;
     }
 
     &.fillHeight {
@@ -154,6 +180,12 @@ const GlobalStyle = createGlobalStyle`
 
     @media (max-width: 480px) {
       padding: 60px 0;
+    }
+
+    /* A short window — a laptop in a split screen, a phone in landscape — has
+       no room to spend a third of the viewport on the gap between sections. */
+    @media (max-height: 620px) {
+      padding: 48px 0;
     }
   }
 

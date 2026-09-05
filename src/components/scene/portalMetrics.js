@@ -35,6 +35,40 @@ export const PORTAL_LAYOUT = {
 export const NARROW_BREAKPOINT = 1080;
 
 /**
+ * Pixels per world unit at a given depth.
+ *
+ * Vertical field of view fixes this ratio, so it is a function of viewport
+ * *height* alone. That is the whole reason the clamp below has to exist: a
+ * formation offset three world units to the right is offset by a distance that
+ * grows with height, on a screen whose width had no say in it. At 1440x900
+ * that is a comfortable 800px; on a 1200x2000 portrait monitor it is 1130px,
+ * which is off the right-hand edge of a 1200px screen.
+ */
+export const pxPerWorldUnit = (height, depth = CAMERA.z) =>
+  height / 2 / (Math.tan(((CAMERA.fov / 2) * Math.PI) / 180) * Math.max(depth, 0.001));
+
+/**
+ * The most of the half-width a formation's centre may be pushed out by. The
+ * rest is left for the formation's own radius and for whatever copy shares the
+ * frame with it.
+ */
+const OFFSET_BUDGET = 0.62;
+
+/**
+ * A horizontal offset in world units, limited to what this viewport can
+ * actually show.
+ *
+ * Below the budget nothing changes, so every ordinary landscape window keeps
+ * exactly the composition it had. It is only the proportions the layout was
+ * never drawn for — portrait desktops, half-width windows, very short and wide
+ * ones — that get pulled back in.
+ */
+export const clampWorldX = (x, width, height) => {
+  const limit = ((width * 0.5) / pxPerWorldUnit(height)) * OFFSET_BUDGET;
+  return Math.max(-limit, Math.min(limit, x));
+};
+
+/**
  * Where the portal lands on screen, in pixels.
  *
  * Vertical field of view fixes the world-to-pixel ratio, so this holds at any
@@ -42,7 +76,7 @@ export const NARROW_BREAKPOINT = 1080;
  */
 export const getPortalMetrics = key => {
   const layout = PORTAL_LAYOUT[key] || PORTAL_LAYOUT.hero;
-  const width = window.innerWidth;
+  const width = document.documentElement.clientWidth;
   const height = window.innerHeight;
 
   const halfHeightWorld = Math.tan(((CAMERA.fov / 2) * Math.PI) / 180) * CAMERA.z;
@@ -51,7 +85,7 @@ export const getPortalMetrics = key => {
 
   return {
     narrow,
-    centreX: width / 2 + (narrow ? 0 : layout.x) * pxPerWorld,
+    centreX: width / 2 + clampWorldX(narrow ? 0 : layout.x, width, height) * pxPerWorld,
     centreY: height / 2,
     radius: layout.radius * (narrow ? 0.8 : 1) * pxPerWorld,
   };
@@ -99,6 +133,9 @@ export const GALAXY = {
   offsetX: 1.0,
 };
 
+/** The galaxy's own offset, under the same clamp as every other formation. */
+export const galaxyOffsetX = (width, height) => clampWorldX(GALAXY.offsetX, width, height);
+
 /** A point on the centreline of arm `arm` at travel `t` (0 at the bulge, 1 at the rim). */
 export const galaxyArmPoint = (arm, t) => {
   const r = GALAXY.inner + (GALAXY.outer - GALAXY.inner) * t;
@@ -108,10 +145,14 @@ export const galaxyArmPoint = (arm, t) => {
 };
 
 /** Tilts a point on the galaxy's plane into world space. */
-export const galaxyToWorld = ({ x, z }) => {
+export const galaxyToWorld = ({ x, z }, offsetX) => {
   const c = Math.cos(GALAXY.tilt);
   const s = Math.sin(GALAXY.tilt);
-  return { x: x + GALAXY.offsetX, y: -z * s, z: z * c };
+  const offset =
+    offsetX === undefined
+      ? galaxyOffsetX(document.documentElement.clientWidth, window.innerHeight)
+      : offsetX;
+  return { x: x + offset, y: -z * s, z: z * c };
 };
 
 /**
@@ -123,10 +164,11 @@ export const galaxyToWorld = ({ x, z }) => {
  * projected with the perspective divide or the labels drift off the arms.
  */
 export const projectToScreen = ({ x, y, z }) => {
-  const width = window.innerWidth;
+  // clientWidth, not innerWidth: on Windows the latter includes the scrollbar
+  // gutter, which would put every projected label half a scrollbar off centre.
+  const width = document.documentElement.clientWidth;
   const height = window.innerHeight;
-  const depth = Math.max(CAMERA.z - z, 0.001);
-  const pxPerWorld = height / 2 / (Math.tan(((CAMERA.fov / 2) * Math.PI) / 180) * depth);
+  const pxPerWorld = pxPerWorldUnit(height, CAMERA.z - z);
   return { x: width / 2 + x * pxPerWorld, y: height / 2 - y * pxPerWorld, pxPerWorld };
 };
 

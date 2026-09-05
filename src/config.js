@@ -31,10 +31,13 @@ module.exports = {
     },
   ],
 
+  /* Kept in step with src/styles/variables.js, which is the source of truth
+     for the running page. These are the few places a colour is needed outside
+     CSS: the web app manifest, and Gatsby's traced-SVG image placeholders. */
   colors: {
-    green: '#ffffff',
-    navy: '#0f0f0f',
-    darkNavy: '#050505',
+    green: '#cfe3ff',
+    navy: '#0a0e14',
+    darkNavy: '#04070c',
   },
 
   srConfig: (delay = 200, viewFactor = 0.25) => ({
